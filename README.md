@@ -123,7 +123,7 @@ create table spawns (
 - [ ] `npm create astro@latest` 
 - [ ] Install Tailwind: `npx astro add tailwind`
 - [ ] Install Supabase client: `npm install @supabase/supabase-js`
-- [ ] Add `.env` with `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`
+- [ ] Add `.env` with `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 - [ ] Create `src/lib/supabase.ts` client
 
 ### 3. Display Page (`/`)

@@ -2,19 +2,23 @@ import type { PageServerLoad } from './$types';
 import type { MapWithRotation, RotationWithStages, StageWithRounds } from '$lib/types';
 
 export const load: PageServerLoad = async (event) => {
-	const { data: maps } = await event.locals.supabase
+	const { data: maps, error: mapsError } = await event.locals.supabase
 		.from('maps')
 		.select('*')
 		.order('name');
 
-	if (!maps) {
+	if (mapsError) {
+		console.error('Error fetching maps:', mapsError);
+	}
+
+	if (!maps || maps.length === 0) {
 		return { maps: [] as MapWithRotation[] };
 	}
 
 	const mapsWithRotations: MapWithRotation[] = [];
 
 	for (const map of maps) {
-		const { data: rotations } = await event.locals.supabase
+		const { data: rotations, error: rotError } = await event.locals.supabase
 			.from('rotations')
 			.select(`
 				*,
@@ -30,6 +34,10 @@ export const load: PageServerLoad = async (event) => {
 			.eq('map_id', map.id)
 			.order('week_start', { ascending: false })
 			.limit(1);
+
+		if (rotError) {
+			console.error(`Error fetching rotation for ${map.name}:`, rotError);
+		}
 
 		const rotation = rotations?.[0] ?? null;
 
