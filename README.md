@@ -9,7 +9,6 @@ A small static website for tracking weekly enemy spawn rotations across 4 maps. 
 Every Saturday, spawn rotations reset. Contributors log in to the admin page and enter the new rotations. The public display page reads from Supabase and renders clean tables per map.
 
 **Maps:** Spider, Oni, Snake, Dragon
-
 **Structure per map:**
 - 4 Stages (each with an optional modifier)
 - 3 Rounds per stage (12 rounds total)
