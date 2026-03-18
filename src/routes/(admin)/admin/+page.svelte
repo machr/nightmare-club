@@ -2,14 +2,17 @@
 	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+	import { SegmentedControl } from '$lib/components/ui/segmented-control';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	const locations = ['Pagoda', 'Cemetery', 'Courtyard'] as const;
 	const elements = ['Sun', 'Moon', 'Storm'] as const;
 
 	let selectedMapId = $state('');
+
+	let selectedMap = $derived(data.maps?.find((m: any) => m.id === selectedMapId) ?? null);
+	let locations = $derived(selectedMap?.locations ?? []);
 
 	let existingRotation = $derived(
 		data.existingRotations?.find((r: any) => r.map_id === selectedMapId) ?? null
@@ -103,37 +106,25 @@
 				{#each [1, 2, 3] as roundNum}
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-muted-foreground">Round {roundNum}</h4>
-						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-{spawnCount}">
+						<div class="grid gap-3 {spawnCount === 3 ? 'grid-cols-3' : 'grid-cols-2'}">
 							{#each Array.from({ length: spawnCount }, (_, i) => i + 1) as spawnIdx}
 								{@const existing = getExistingSpawn(stageNum, roundNum, spawnIdx)}
 								<div class="flex items-center gap-2 rounded-md border border-border/50 bg-card p-2">
 									<span class="text-xs font-medium text-muted-foreground w-5">
 										{spawnIdx}
 									</span>
-									<select
+									<SegmentedControl
+										options={locations}
 										name={`stage_${stageNum}_round_${roundNum}_spawn_${spawnIdx}_location`}
-										class={selectClass}
+										value={existing?.location ?? ''}
 										required
-									>
-										<option value="" disabled selected={!existing}>Location</option>
-										{#each locations as loc}
-											<option value={loc} selected={existing?.location === loc}>
-												{loc}
-											</option>
-										{/each}
-									</select>
-									<select
+									/>
+									<SegmentedControl
+										options={elements}
 										name={`stage_${stageNum}_round_${roundNum}_spawn_${spawnIdx}_element`}
-										class={selectClass}
+										value={existing?.element ?? ''}
 										required
-									>
-										<option value="" disabled selected={!existing}>Element</option>
-										{#each elements as el}
-											<option value={el} selected={existing?.element === el}>
-												{el}
-											</option>
-										{/each}
-									</select>
+									/>
 								</div>
 							{/each}
 						</div>

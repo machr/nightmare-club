@@ -2,6 +2,7 @@ export type Map = {
 	id: string;
 	name: string;
 	slug: string;
+	locations: string[];
 };
 
 export type Modifier = {
@@ -34,7 +35,7 @@ export type Spawn = {
 	id: string;
 	round_id: string;
 	spawn_index: number;
-	location: 'Pagoda' | 'Cemetery' | 'Courtyard';
+	location: string;
 	element: 'Sun' | 'Moon' | 'Storm';
 };
 
