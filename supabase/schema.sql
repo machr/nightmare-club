@@ -8,7 +8,8 @@
 create table if not exists maps (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
-  slug text not null unique
+  slug text not null unique,
+  locations text[] not null default '{}'
 );
 
 create table if not exists modifiers (
@@ -52,11 +53,10 @@ create table if not exists spawns (
 -- Seed data
 -- ============================================================
 
-insert into maps (name, slug) values
-  ('Spider', 'spider'),
-  ('Oni', 'oni'),
-  ('Snake', 'snake'),
-  ('Dragon', 'dragon')
+insert into maps (name, slug, locations) values
+  ('Hidden Temple', 'hidden-temple', '{"Pagoda","Cemetery","Courtyard"}'),
+  ('Frozen Valley', 'frozen-valley', '{"Waterfall","Hillside","Armory"}'),
+  ('Broken Castle', 'broken-castle', '{"Foundry","Burned Garden","Keep"}')
 on conflict (slug) do nothing;
 
 insert into modifiers (name) values

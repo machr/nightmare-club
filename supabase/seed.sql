@@ -1,4 +1,4 @@
--- Example seed data: Full Spider map rotation for the current week
+-- Example seed data: Full Hidden Temple rotation for the current week
 -- Run this AFTER schema.sql in the Supabase SQL Editor.
 
 do $$
@@ -17,7 +17,7 @@ begin
   v_week_start := current_date - ((extract(dow from current_date)::int + 1) % 7);
 
   -- Get map and modifier IDs
-  select id into v_map_id from maps where slug = 'spider';
+  select id into v_map_id from maps where slug = 'hidden-temple';
   select id into v_modifier_fire from modifiers where name = 'Fire';
   select id into v_modifier_ice from modifiers where name = 'Ice';
   select id into v_modifier_shadow from modifiers where name = 'Shadow';
