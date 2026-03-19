@@ -1,29 +1,35 @@
 <script lang="ts">
-	import { invalidate } from '$app/navigation';
-	import { onMount } from 'svelte';
-	import { createBrowserClient, isBrowser } from '@supabase/ssr';
-	import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY } from '$env/static/public';
-	import '../app.css';
+    import { invalidate } from "$app/navigation";
+    import { onMount } from "svelte";
+    import { createBrowserClient, isBrowser } from "@supabase/ssr";
+    import {
+        PUBLIC_SUPABASE_URL,
+        PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT,
+    } from "$env/static/public";
+    import "../app.css";
 
-	let { data, children } = $props();
+    let { data, children } = $props();
 
-	let supabase = $derived(
-		isBrowser()
-			? createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY)
-			: undefined
-	);
+    let supabase = $derived(
+        isBrowser()
+            ? createBrowserClient(
+                  PUBLIC_SUPABASE_URL,
+                  PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT,
+              )
+            : undefined,
+    );
 
-	onMount(() => {
-		const {
-			data: { subscription }
-		} = supabase!.auth.onAuthStateChange((_, newSession) => {
-			if (newSession?.expires_at !== data.session?.expires_at) {
-				invalidate('supabase:auth');
-			}
-		});
+    onMount(() => {
+        const {
+            data: { subscription },
+        } = supabase!.auth.onAuthStateChange((_, newSession) => {
+            if (newSession?.expires_at !== data.session?.expires_at) {
+                invalidate("supabase:auth");
+            }
+        });
 
-		return () => subscription.unsubscribe();
-	});
+        return () => subscription.unsubscribe();
+    });
 </script>
 
 {@render children()}
