@@ -26,13 +26,13 @@ Every Saturday, spawn rotations reset. Contributors log in to the admin page and
 
 ## Tech Stack
 
-| Layer      | Tool                        |
-| ---------- | --------------------------- |
-| Framework  | SvelteKit                   |
-| UI         | shadcn-svelte + Tailwind CSS |
-| Database   | Supabase (Postgres)         |
-| Auth       | Supabase Auth               |
-| Hosting    | Vercel                      |
+| Layer     | Tool                         |
+| --------- | ---------------------------- |
+| Framework | SvelteKit                    |
+| UI        | shadcn-svelte + Tailwind CSS |
+| Database  | Supabase (Postgres)          |
+| Auth      | Supabase Auth                |
+| Hosting   | Vercel                       |
 
 ---
 
@@ -67,7 +67,7 @@ supabase/
 4. Create admin user(s) via Supabase Auth dashboard
 5. Set environment variables:
    - `PUBLIC_SUPABASE_URL`
-   - `PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
+   - `PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT`
 6. `pnpm install && pnpm dev`
 
 ---
