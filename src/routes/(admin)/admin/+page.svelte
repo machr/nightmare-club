@@ -3,18 +3,17 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { SegmentedControl } from '$lib/components/ui/segmented-control';
+	import { ATTUNEMENT_NAMES, ROUND_STRUCTURE, ATTUNEMENT_MAP_SLUGS } from '$lib/constants';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-
-	const attunements = ['Sun', 'Moon', 'Storm'] as const;
 
 	let selectedMapId = $state('');
 	let selectedChallengeId = $state('');
 
 	let selectedMap = $derived(data.maps?.find((m: any) => m.id === selectedMapId) ?? null);
 	let locations = $derived(selectedMap?.locations ?? []);
-	let hasAttunements = $derived(selectedMap?.slug === 'hidden-temple');
+	let hasAttunements = $derived(ATTUNEMENT_MAP_SLUGS.has(selectedMap?.slug ?? ''));
 
 	let existingRotation = $derived(
 		data.existingRotations?.find((r: any) => r.map_id === selectedMapId) ?? null
@@ -78,6 +77,7 @@
 	<form method="POST" action="?/save" use:enhance class="space-y-8">
 		<input type="hidden" name="week_start" value={data.weekStart} />
 		<input type="hidden" name="challenge_id" value={selectedChallengeId} />
+		<input type="hidden" name="map_slug" value={selectedMap?.slug ?? ''} />
 
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 			<div class="space-y-2">
@@ -118,9 +118,8 @@
 			</div>
 		</div>
 
-		{#each [1, 2, 3, 4] as roundNum}
-			{@const waveCount = roundNum <= 3 ? 3 : 4}
-			{@const spawnCount = roundNum <= 3 ? 3 : 4}
+		{#each Object.keys(ROUND_STRUCTURE).map(Number) as roundNum}
+			{@const { waves: waveCount, spawns: spawnCount } = ROUND_STRUCTURE[roundNum as keyof typeof ROUND_STRUCTURE]}
 			<div class="rounded-lg border-2 border-border p-4 space-y-4">
 				<h3 class="text-lg font-bold text-foreground">Stage {roundNum}</h3>
 
@@ -146,14 +145,14 @@
 									{#if hasAttunements}
 										<div class="flex items-center gap-2 pl-7">
 											<SegmentedControl
-												options={attunements}
+												options={ATTUNEMENT_NAMES}
 												name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_attunement_1`}
 												value={getExistingAttunement(roundNum, waveNum, spawnIdx, 0)}
 												required
 											/>
 											{#if hasSecondAttunement(roundNum, waveNum, spawnIdx)}
 												<SegmentedControl
-													options={attunements}
+													options={ATTUNEMENT_NAMES}
 													name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_attunement_2`}
 													value={getExistingAttunement(roundNum, waveNum, spawnIdx, 1)}
 												/>
