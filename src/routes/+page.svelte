@@ -22,24 +22,29 @@
 	});
 
 	let defaultTab = $derived(data.maps[0]?.slug ?? '');
+
+	function shortName(name: string): string {
+		const match = name.match(/\(([^)]+)\)/);
+		return match ? match[1] : name;
+	}
 </script>
 
-<div class="mx-auto max-w-4xl px-4 py-8">
-	<div class="mb-8 text-center">
-		<h1 class="text-3xl font-bold tracking-tight">Nightmare Club — Spawn Rotations</h1>
+<div class="mx-auto max-w-5xl px-2 py-4 sm:px-4 sm:py-8">
+	<div class="mb-6 text-center">
+		<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Nightmare Club — Spawn Rotations</h1>
 		{#if currentWeek()}
-			<p class="mt-2 text-muted-foreground">Week of {currentWeek()}</p>
+			<p class="mt-1 text-sm text-muted-foreground">Week of {currentWeek()}</p>
 		{/if}
-		<div class="mt-3">
+		<div class="mt-2">
 			<ResetCountdown />
 		</div>
 	</div>
 
 	{#if data.maps.length > 0}
 		<Tabs value={defaultTab}>
-			<TabsList class="mb-4 grid w-full grid-cols-4">
+			<TabsList class="mb-3 grid w-full grid-cols-4">
 				{#each data.maps as map}
-					<TabsTrigger value={map.slug}>{map.name}</TabsTrigger>
+					<TabsTrigger value={map.slug} class="text-xs sm:text-sm">{shortName(map.name)}</TabsTrigger>
 				{/each}
 			</TabsList>
 			{#each data.maps as map}

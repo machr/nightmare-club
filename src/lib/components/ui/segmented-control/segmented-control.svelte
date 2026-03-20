@@ -13,14 +13,14 @@
 </script>
 
 <input type="hidden" {name} {value} {required} />
-<div class="inline-flex h-7 items-center p-0.5 text-muted-foreground">
+<div class="flex h-9 w-full items-center rounded-md bg-gray-700 p-0.5">
     {#each options as option}
         <button
             type="button"
-            class="px-2 py-1 text-xs transition-colors hover:cursor-pointer {value ===
+            class="flex-1 px-1 py-2 text-center text-xs transition-colors hover:cursor-pointer {value ===
             option
-                ? 'bg-foreground text-gray-300 rounded-md'
-                : 'hover:text-foreground/80 hover:bg-accent-foreground hover:rounded-md hover:text-gray-300'}"
+                ? 'bg-gray-900 text-gray-100 rounded-md font-semibold'
+                : 'text-gray-400 hover:text-gray-200'}"
             onclick={() => (value = option)}
         >
             {option}
