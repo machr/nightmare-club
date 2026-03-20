@@ -1,5 +1,7 @@
 <script lang="ts">
-	/** Countdown to next Tuesday 1:00 AM Australia/Sydney */
+	import { RESET_SCHEDULE } from '$lib/constants';
+
+	/** Countdown to next reset */
 
 	let now = $state(Date.now());
 
@@ -12,9 +14,8 @@
 	let remaining = $derived(resetMs - now);
 
 	function sydneyDay(date: Date): { weekday: number; hour: number; dateStr: string } {
-		// Get the current day/hour in Sydney using Intl
 		const parts = new Intl.DateTimeFormat('en-US', {
-			timeZone: 'Australia/Sydney',
+			timeZone: RESET_SCHEDULE.timezone,
 			weekday: 'short',
 			hour: 'numeric',
 			hour12: false,
@@ -39,35 +40,33 @@
 		const date = new Date(currentMs);
 		const syd = sydneyDay(date);
 
-		// Days until next Tuesday (2)
-		let daysAhead = (2 - syd.weekday + 7) % 7;
-		// If it's already Tuesday past 1am Sydney, next week
-		if (daysAhead === 0 && syd.hour >= 1) daysAhead = 7;
+		// Days until next reset weekday
+		let daysAhead = (RESET_SCHEDULE.weekday - syd.weekday + 7) % 7;
+		// If it's already reset day past reset hour, next week
+		if (daysAhead === 0 && syd.hour >= RESET_SCHEDULE.hour) daysAhead = 7;
 
 		// Build the target date string in Sydney
 		const target = new Date(currentMs + daysAhead * 86400000);
 		const targetSyd = sydneyDay(target);
 
-		// Now we need Tuesday 1:00 AM Sydney as a UTC timestamp.
-		// Use the target date string + "01:00" and resolve via offset probing.
+		// Now we need the reset time in Sydney as a UTC timestamp.
 		const targetStr = targetSyd.dateStr;
-		// Create two candidate UTC times and check which one lands on 1am Sydney
-		// Guess: Sydney is UTC+10 or UTC+11
+		const resetHourStr = String(RESET_SCHEDULE.hour).padStart(2, '0');
+		// Sydney is UTC+10 or UTC+11
 		for (const offsetHours of [11, 10]) {
-			const utcMs = new Date(`${targetStr}T01:00:00Z`).getTime() - offsetHours * 3600000;
-			// Verify this actually is 1am Sydney
+			const utcMs = new Date(`${targetStr}T${resetHourStr}:00:00Z`).getTime() - offsetHours * 3600000;
 			const check = new Intl.DateTimeFormat('en-US', {
-				timeZone: 'Australia/Sydney',
+				timeZone: RESET_SCHEDULE.timezone,
 				hour: 'numeric',
 				hour12: false
 			}).format(new Date(utcMs));
-			if (parseInt(check) === 1) {
+			if (parseInt(check) === RESET_SCHEDULE.hour) {
 				return utcMs;
 			}
 		}
 
 		// Fallback with UTC+11
-		return new Date(`${targetSyd.dateStr}T01:00:00Z`).getTime() - 11 * 3600000;
+		return new Date(`${targetSyd.dateStr}T${resetHourStr}:00:00Z`).getTime() - 11 * 3600000;
 	}
 
 	function formatCountdown(ms: number): string {

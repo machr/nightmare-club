@@ -1,25 +1,20 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
+	import { ATTUNEMENTS, ATTUNEMENT_MAP_SLUGS } from '$lib/constants';
 	import type { RotationWithRounds } from '$lib/types';
 
 	let { rotation, mapSlug = '' }: { rotation: RotationWithRounds | null; mapSlug?: string } = $props();
 
-	const hasAttunements = $derived(mapSlug === 'hidden-temple');
-
-	const attunementColors: Record<string, string> = {
-		Sun: '#e07722',
-		Moon: '#6289f5',
-		Storm: '#47d12c'
-	};
+	const hasAttunements = $derived(ATTUNEMENT_MAP_SLUGS.has(mapSlug));
 
 	function attunementStyle(attunements: string[]): string {
 		if (!attunements || attunements.length === 0) return '';
 		if (attunements.length === 1) {
-			const color = attunementColors[attunements[0]] ?? '#888';
+			const color = ATTUNEMENTS[attunements[0] as keyof typeof ATTUNEMENTS] ?? '#888';
 			return `border-left: 3px solid ${color};padding-left: 0.5rem;`;
 		}
-		const c1 = attunementColors[attunements[0]] ?? '#888';
-		const c2 = attunementColors[attunements[1]] ?? '#888';
+		const c1 = ATTUNEMENTS[attunements[0] as keyof typeof ATTUNEMENTS] ?? '#888';
+		const c2 = ATTUNEMENTS[attunements[1] as keyof typeof ATTUNEMENTS] ?? '#888';
 		return `border-left: 3px solid ${c1};border-right: 3px solid ${c2};padding-left: 0.5rem;padding-right: 0.5rem;`;
 	}
 
