@@ -7,68 +7,69 @@
 
 	const hasAttunements = $derived(ATTUNEMENT_MAP_SLUGS.has(mapSlug));
 
-	function attunementStyle(attunements: string[]): string {
-		if (!attunements || attunements.length === 0) return '';
-		if (attunements.length === 1) {
-			const color = ATTUNEMENTS[attunements[0] as keyof typeof ATTUNEMENTS] ?? '#888';
-			return `border-left: 3px solid ${color};padding-left: 0.5rem;`;
-		}
-		const c1 = ATTUNEMENTS[attunements[0] as keyof typeof ATTUNEMENTS] ?? '#888';
-		const c2 = ATTUNEMENTS[attunements[1] as keyof typeof ATTUNEMENTS] ?? '#888';
-		return `border-left: 3px solid ${c1};border-right: 3px solid ${c2};padding-left: 0.5rem;padding-right: 0.5rem;`;
-	}
-
-	function formatAttunements(attunements: string[]): string {
-		if (!attunements || attunements.length === 0) return '';
-		return attunements.join(', ');
+	function attunementColor(name: string): string {
+		return ATTUNEMENTS[name as keyof typeof ATTUNEMENTS] ?? '#888';
 	}
 </script>
 
 {#if !rotation}
 	<p class="py-8 text-center text-muted-foreground">No rotation data yet for this week.</p>
 {:else}
-	<div class="rounded-xl border border-border bg-card p-3 space-y-1 sm:p-4">
+	<div class="space-y-3">
 		{#if rotation.challenge}
-			<div class="mb-2 flex items-center gap-2">
+			<div class="flex items-center gap-2 rounded-md bg-gray-800 px-3 py-2">
 				<Badge variant="destructive" class="text-xs uppercase">Challenge</Badge>
-				<span class="text-sm font-medium">{rotation.challenge.name}</span>
+				<span class="text-sm font-medium text-gray-100">{rotation.challenge.name}</span>
 				{#if rotation.challenge.description}
-					<span class="text-xs text-muted-foreground">— {rotation.challenge.description}</span>
+					<span class="text-xs text-gray-400">— {rotation.challenge.description}</span>
 				{/if}
 			</div>
 		{/if}
 
-		{#each rotation.rounds as round, i}
-			{#if i > 0}
-				<hr class="border-border" />
-			{/if}
-			<div class="py-2 space-y-2 sm:py-3 sm:space-y-3">
-				<div class="flex items-center gap-2">
-					<h3 class="text-base font-bold uppercase text-primary sm:text-lg">
+		{#each rotation.rounds as round}
+			<div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-800">
+				<div class="border-b border-gray-700 bg-gray-900 px-3 py-1.5">
+					<h3 class="text-sm font-bold uppercase tracking-wide text-gray-200">
 						Stage {round.round_number}
 					</h3>
 				</div>
 
-				<div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-					{#each round.waves as wave}
-						<div class="flex gap-3 sm:block sm:space-y-1.5">
-							<p class="shrink-0 w-8 text-sm font-semibold text-muted-foreground sm:w-auto">
-								{round.round_number}-{wave.wave_number}
-							</p>
-							<div class="flex flex-wrap gap-x-4 gap-y-0.5 sm:block sm:space-y-1.5">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="border-b border-gray-700 text-xs text-gray-400">
+							<th class="w-12 px-2 py-1 text-left font-medium">Wave</th>
+							{#each round.waves[0]?.spawns ?? [] as _, i}
+								<th class="px-2 py-1 text-left font-medium">Spawn {i + 1}</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each round.waves as wave, wi}
+							<tr class="{wi % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700/50'} border-b border-gray-700/50 last:border-0">
+								<td class="px-2 py-1.5 font-mono text-xs font-semibold text-gray-400">
+									{wave.wave_number}
+								</td>
 								{#each wave.spawns as spawn}
 									{@const atts = spawn.element ?? []}
-									<p class="text-sm uppercase rounded" style={hasAttunements ? attunementStyle(atts) : ''}>
-										{spawn.location}
+									<td class="px-2 py-1.5">
+										<span class="font-medium text-gray-100">{spawn.location}</span>
 										{#if hasAttunements && atts.length > 0}
-											<span class="text-muted-foreground">({formatAttunements(atts)})</span>
+											<span class="ml-1 inline-flex gap-0.5">
+												{#each atts as att}
+													<span
+														class="inline-block h-2 w-2 rounded-full"
+														style="background-color: {attunementColor(att)}"
+														title={att}
+													></span>
+												{/each}
+											</span>
 										{/if}
-									</p>
+									</td>
 								{/each}
-							</div>
-						</div>
-					{/each}
-				</div>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
 			</div>
 		{/each}
 	</div>

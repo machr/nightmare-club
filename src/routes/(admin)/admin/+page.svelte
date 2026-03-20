@@ -75,6 +75,13 @@
         return getExistingAttunement(roundNum, waveNum, spawnIdx, 1) !== "";
     }
 
+    // After save, keep the saved map selected
+    $effect(() => {
+        if (form?.savedMapId) {
+            selectedMapId = form.savedMapId;
+        }
+    });
+
     // Initialise challenge from existing rotation
     $effect(() => {
         if (existingRotation?.challenge_id) {
@@ -190,11 +197,11 @@
                                     spawnIdx,
                                 )}
                                 <div
-                                    class="rounded-md border-2 border-border/60 bg-card p-2 space-y-1.5 divide-accent"
+                                    class="rounded-md border-2 border-border/60 bg-card p-2 space-y-1.5"
                                 >
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1">
                                         <span
-                                            class="text-xs font-bold text-foreground/60 w-5"
+                                            class="text-xs font-bold text-foreground/60 w-4 shrink-0"
                                         >
                                             {spawnIdx}
                                         </span>
