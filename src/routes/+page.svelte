@@ -51,9 +51,14 @@
         </div>
     </div>
 
-    {#if data.maps.length > 0}
+    {#if data.maps.length === 0}
+        <p class="text-center text-muted-foreground">No rotation data available yet for this week.</p>
+    {:else if data.maps.length === 1}
+        <h2 class="mb-3 text-center text-lg font-semibold">{data.maps[0].name}</h2>
+        <MapTable rotation={data.maps[0].rotation} mapSlug={data.maps[0].slug} />
+    {:else}
         <Tabs value={defaultTab}>
-            <TabsList class="mb-3 grid w-full grid-cols-4">
+            <TabsList class="mb-3 grid w-full" style="grid-template-columns: repeat({data.maps.length}, 1fr);">
                 {#each data.maps as map}
                     <TabsTrigger value={map.slug} class="text-xs sm:text-sm"
                         >{shortName(map.name)}</TabsTrigger
@@ -66,7 +71,5 @@
                 </TabsContent>
             {/each}
         </Tabs>
-    {:else}
-        <p class="text-center text-muted-foreground">No maps available.</p>
     {/if}
 </div>

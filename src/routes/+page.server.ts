@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import type { MapWithRotation, RotationWithRounds, RoundWithWaves } from '$lib/types';
+import { getCurrentWeekStart } from '$lib/dates';
 
 export const load: PageServerLoad = async (event) => {
 	const { data: maps, error: mapsError } = await event.locals.supabase
@@ -15,6 +16,7 @@ export const load: PageServerLoad = async (event) => {
 		return { maps: [] as MapWithRotation[] };
 	}
 
+	const weekStart = getCurrentWeekStart();
 	const mapsWithRotations: MapWithRotation[] = [];
 
 	for (const map of maps) {
@@ -32,7 +34,7 @@ export const load: PageServerLoad = async (event) => {
 				)
 			`)
 			.eq('map_id', map.id)
-			.order('week_start', { ascending: false })
+			.eq('week_start', weekStart)
 			.limit(1);
 
 		if (rotError) {
@@ -68,5 +70,6 @@ export const load: PageServerLoad = async (event) => {
 		});
 	}
 
-	return { maps: mapsWithRotations };
+	// Only return maps that have rotation data for the current week
+	return { maps: mapsWithRotations.filter(m => m.rotation !== null) };
 };
