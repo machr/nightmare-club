@@ -3,24 +3,12 @@ import type { MapWithRotation, RotationWithRounds, RoundWithWaves } from '$lib/t
 import { getCurrentWeekStart } from '$lib/dates';
 
 export const load: PageServerLoad = async (event) => {
-	const { data: maps, error: mapsError } = await event.locals.supabase
-		.from('maps')
-		.select('*')
-		.order('name');
-
-	if (mapsError) {
-		console.error('Error fetching maps:', mapsError);
-	}
-
-	if (!maps || maps.length === 0) {
-		return { maps: [] as MapWithRotation[] };
-	}
-
 	const weekStart = getCurrentWeekStart();
-	const mapsWithRotations: MapWithRotation[] = [];
 
-	for (const map of maps) {
-		const { data: rotations, error: rotError } = await event.locals.supabase
+	// Fetch maps and rotations in parallel (2 queries instead of N+1)
+	const [mapsResult, rotationsResult] = await Promise.all([
+		event.locals.supabase.from('maps').select('*').order('name'),
+		event.locals.supabase
 			.from('rotations')
 			.select(`
 				*,
@@ -33,43 +21,60 @@ export const load: PageServerLoad = async (event) => {
 					)
 				)
 			`)
-			.eq('map_id', map.id)
 			.eq('week_start', weekStart)
-			.limit(1);
+	]);
 
-		if (rotError) {
-			console.error(`Error fetching rotation for ${map.name}:`, rotError);
-		}
+	if (mapsResult.error) {
+		console.error('Error fetching maps:', mapsResult.error);
+	}
+	if (rotationsResult.error) {
+		console.error('Error fetching rotations:', rotationsResult.error);
+	}
 
-		const rotation = rotations?.[0] ?? null;
+	const maps = mapsResult.data;
+	const rotations = rotationsResult.data;
 
-		if (rotation) {
-			// Sort rounds by round_number
-			rotation.rounds.sort(
-				(a: RoundWithWaves, b: RoundWithWaves) => a.round_number - b.round_number
+	if (!maps || maps.length === 0) {
+		return { maps: [] as MapWithRotation[] };
+	}
+
+	// Index rotations by map_id for O(1) lookup
+	const rotationByMapId = new Map<string, RotationWithRounds>();
+	for (const rotation of rotations ?? []) {
+		// Sort rounds by round_number
+		rotation.rounds.sort(
+			(a: RoundWithWaves, b: RoundWithWaves) => a.round_number - b.round_number
+		);
+
+		// Sort waves and spawns within each round
+		for (const round of rotation.rounds) {
+			round.waves.sort(
+				(a: { wave_number: number }, b: { wave_number: number }) =>
+					a.wave_number - b.wave_number
 			);
-
-			// Sort waves and spawns within each round
-			for (const round of rotation.rounds) {
-				round.waves.sort(
-					(a: { wave_number: number }, b: { wave_number: number }) =>
-						a.wave_number - b.wave_number
+			for (const wave of round.waves) {
+				wave.spawns.sort(
+					(a: { spawn_order: number }, b: { spawn_order: number }) =>
+						a.spawn_order - b.spawn_order
 				);
-				for (const wave of round.waves) {
-					wave.spawns.sort(
-						(a: { spawn_order: number }, b: { spawn_order: number }) =>
-							a.spawn_order - b.spawn_order
-					);
-				}
 			}
 		}
 
-		mapsWithRotations.push({
-			...map,
-			rotation: rotation as RotationWithRounds | null
-		});
+		rotationByMapId.set(rotation.map_id, rotation as RotationWithRounds);
 	}
 
-	// Only return maps that have rotation data for the current week
-	return { maps: mapsWithRotations.filter(m => m.rotation !== null) };
+	// Join maps with their rotations, only include maps that have rotation data
+	const mapsWithRotations: MapWithRotation[] = maps
+		.filter((map) => rotationByMapId.has(map.id))
+		.map((map) => ({
+			...map,
+			rotation: rotationByMapId.get(map.id)!
+		}));
+
+	// Cache at Vercel CDN edge: 1 hour, serve stale up to 24 hours while revalidating
+	event.setHeaders({
+		'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+	});
+
+	return { maps: mapsWithRotations };
 };
