@@ -35,19 +35,19 @@
 						<tr class="border-b border-gray-700 text-xs text-gray-400">
 							<th class="hidden sm:table-cell w-12 px-2 py-1 text-left font-medium">Wave</th>
 							{#each round.waves[0]?.spawns ?? [] as _, i}
-								<th class="px-1 sm:px-2 py-1 text-left font-medium">Spawn {i + 1}</th>
+								<th class="px-1 sm:px-2 py-1 text-center font-medium {(i + 1) % 2 === 0 ? 'bg-gray-700/50' : ''}">Spawn {i + 1}</th>
 							{/each}
 						</tr>
 					</thead>
 					<tbody>
 						{#each round.waves as wave, wi}
-							<tr class="{wi % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700/50'} border-b border-gray-700/50 last:border-0">
+							<tr class="border-b border-gray-700/50 last:border-0">
 								<td class="hidden sm:table-cell px-2 py-3 font-mono text-xs font-semibold text-gray-400">
 									{wave.wave_number}
 								</td>
-								{#each wave.spawns as spawn}
+								{#each wave.spawns as spawn, si}
 									{@const atts = spawn.element ?? []}
-									<td class="px-1 sm:px-2 py-3">
+									<td class="px-1 sm:px-2 py-3 text-center {(si + 1) % 2 === 0 ? 'bg-gray-700/50' : ''}">
 										{#if hasAttunements && atts.length === 1}
 											<span
 												class="inline-block rounded-full px-2 sm:px-3.5 py-1 text-sm font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
