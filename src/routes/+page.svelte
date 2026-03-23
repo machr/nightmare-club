@@ -5,11 +5,43 @@
         TabsTrigger,
         TabsContent,
     } from "$lib/components/ui/tabs";
+    import { Button } from "$lib/components/ui/button";
+    import { Download } from "lucide-svelte";
     import MapTable from "$lib/components/MapTable.svelte";
     import ResetCountdown from "$lib/components/ResetCountdown.svelte";
     import type { PageData } from "./$types";
 
     let { data }: { data: PageData } = $props();
+    let captureTarget: HTMLDivElement;
+    let downloading = $state(false);
+
+    async function downloadAsJpeg() {
+        if (!captureTarget || downloading) return;
+        downloading = true;
+        try {
+            const { domToJpeg } = await import("modern-screenshot");
+            const dataUrl = await domToJpeg(captureTarget, {
+                quality: 0.92,
+                scale: 2,
+                backgroundColor: "#181a20",
+                style: { padding: "24px" },
+                filter: (node: Node) => {
+                    if (
+                        node instanceof HTMLElement &&
+                        node.hasAttribute("data-html2img-ignore")
+                    )
+                        return false;
+                    return true;
+                },
+            });
+            const link = document.createElement("a");
+            link.download = `nightmare-club-rotations-${new Date().toISOString().slice(0, 10)}.jpg`;
+            link.href = dataUrl;
+            link.click();
+        } finally {
+            downloading = false;
+        }
+    }
 
     function formatWeekRange(weekStart: string): string {
         const start = new Date(weekStart + "T00:00:00");
@@ -37,7 +69,7 @@
     }
 </script>
 
-<div class="mx-auto max-w-5xl px-2 py-4 sm:px-4 sm:py-8">
+<div bind:this={captureTarget} class="mx-auto max-w-5xl px-2 py-4 sm:px-4 sm:py-8">
     <div class="mb-6 text-center">
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
             Nightmare Club — Spawn Rotations
@@ -48,6 +80,12 @@
 		{/if} -->
         <div class="mt-2">
             <ResetCountdown />
+        </div>
+        <div class="mt-3" data-html2img-ignore>
+            <Button variant="secondary" size="sm" onclick={downloadAsJpeg} disabled={downloading}>
+                <Download class="mr-1.5 h-3.5 w-3.5" />
+                {downloading ? "Saving..." : "Download as Image"}
+            </Button>
         </div>
     </div>
 
