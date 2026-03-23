@@ -18,6 +18,7 @@ export type Rotation = {
 	created_at: string;
 	challenge_id: string | null;
 	challenge?: Challenge;
+	rotation_challenges?: { challenge: Challenge; round_number: number }[];
 };
 
 export type Round = {
@@ -47,6 +48,7 @@ export type WaveWithSpawns = Wave & {
 
 export type RoundWithWaves = Round & {
 	waves: WaveWithSpawns[];
+	challenge?: Challenge;
 };
 
 export type RotationWithRounds = Rotation & {

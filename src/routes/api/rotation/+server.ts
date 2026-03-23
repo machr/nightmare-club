@@ -23,7 +23,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 			.from('rotations')
 			.select(`
 				*,
-				challenge:challenges(*),
+				rotation_challenges(round_number, challenge:challenges(*)),
 				rounds(
 					*,
 					waves(
@@ -44,12 +44,21 @@ export const GET: RequestHandler = async ({ locals }) => {
 		const rotation = rotations?.[0] ?? null;
 		const hasAttunements = ATTUNEMENT_MAP_SLUGS.has(map.slug);
 
+		// Index challenges by round_number
+		const challengeByRound = new Map<number, any>();
+		for (const rc of rotation?.rotation_challenges ?? []) {
+			if (rc.challenge) challengeByRound.set(rc.round_number, rc.challenge);
+		}
+
 		const rounds = rotation?.rounds
 			?.sort((a: { round_number: number }, b: { round_number: number }) =>
 				a.round_number - b.round_number
 			)
-			.map((round: { round_number: number; waves: any[] }) => ({
+			.map((round: { round_number: number; waves: any[] }) => {
+				const roundChallenge = challengeByRound.get(round.round_number);
+				return {
 				round: round.round_number,
+				...(roundChallenge && { challenge: { name: roundChallenge.name, description: roundChallenge.description } }),
 				waves: round.waves
 					.sort((a: { wave_number: number }, b: { wave_number: number }) =>
 						a.wave_number - b.wave_number
@@ -65,15 +74,13 @@ export const GET: RequestHandler = async ({ locals }) => {
 								...(hasAttunements && { attunements: spawn.element ?? [] })
 							}))
 					}))
-			})) ?? [];
+			};
+		}) ?? [];
 
 		result.push({
 			name: map.name,
 			slug: map.slug,
 			locations: map.locations,
-			challenge: rotation?.challenge
-				? { name: rotation.challenge.name, description: rotation.challenge.description }
-				: null,
 			rounds
 		});
 	}
