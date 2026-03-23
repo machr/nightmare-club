@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Badge } from '$lib/components/ui/badge';
 	import { ATTUNEMENTS, ATTUNEMENT_MAP_SLUGS } from '$lib/constants';
 	import type { RotationWithRounds } from '$lib/types';
 
@@ -15,22 +14,21 @@
 {#if !rotation}
 	<p class="py-8 text-center text-muted-foreground">No rotation data yet for this week.</p>
 {:else}
-	<div class="space-y-3">
+	<div class="space-y-5">
 		{#each rotation.rounds as round}
 			<div class="overflow-hidden rounded-lg border border-gray-700 bg-gray-800">
-				<div class="border-b border-gray-700 bg-gray-900 px-3 py-1.5">
-					<div class="flex items-center gap-2">
+				<div class="border-b border-gray-700 bg-gray-900 px-3 py-3">
+					<div class="flex items-center justify-between">
 						<h3 class="text-sm font-bold uppercase tracking-wide text-gray-200">
 							Stage {round.round_number}
 						</h3>
 						{#if round.challenge}
-							<Badge variant="destructive" class="text-xs uppercase">Challenge</Badge>
 							<span class="text-sm font-medium text-gray-100">{round.challenge.description}</span>
 						{/if}
 					</div>
 				</div>
 
-				<table class="w-full text-sm">
+				<table class="w-full table-fixed text-sm">
 					<thead>
 						<tr class="border-b border-gray-700 text-xs text-gray-400">
 							<th class="hidden sm:table-cell w-12 px-2 py-1 text-left font-medium">Wave</th>
