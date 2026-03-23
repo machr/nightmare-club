@@ -82,6 +82,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 			name: map.name,
 			slug: map.slug,
 			locations: map.locations,
+			credit_text: rotation?.credit_text ?? null,
 			rounds
 		});
 	}

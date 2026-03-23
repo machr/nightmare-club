@@ -16,6 +16,7 @@ export type Rotation = {
 	map_id: string;
 	week_start: string;
 	created_at: string;
+	credit_text: string | null;
 	challenge_id: string | null;
 	challenge?: Challenge;
 	rotation_challenges?: { challenge: Challenge; round_number: number }[];

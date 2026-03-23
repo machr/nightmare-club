@@ -11,6 +11,11 @@ function normalizeSpawnPoint(value: FormDataEntryValue | null): string | null {
 	return raw.slice(0, SPAWN_POINT_MAX_LENGTH);
 }
 
+function normalizeCreditText(value: FormDataEntryValue | null): string | null {
+	const raw = typeof value === 'string' ? value.trim() : '';
+	return raw || null;
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	const supabase = locals.supabase;
 
@@ -62,6 +67,7 @@ export const actions: Actions = {
 		const map_id = formData.get('map_id') as string;
 		const week_start = formData.get('week_start') as string;
 		const map_slug = formData.get('map_slug') as string;
+		const credit_text = normalizeCreditText(formData.get('credit_text'));
 		const mapHasAttunements = ATTUNEMENT_MAP_SLUGS.has(map_slug);
 
 		if (!map_id || !week_start) {
@@ -168,7 +174,7 @@ export const actions: Actions = {
 			// Insert new rotation
 			const { data: rotation, error: rotError } = await supabase
 				.from('rotations')
-				.insert({ map_id, week_start })
+				.insert({ map_id, week_start, credit_text })
 				.select()
 				.single();
 
@@ -247,6 +253,7 @@ export const actions: Actions = {
 			console.info('[admin save] rotation persisted', {
 				map_id,
 				week_start,
+				has_credit_text: Boolean(credit_text),
 				challenges: challengeRows.length,
 				rounds: roundRows.length,
 				waves: wavesToInsert.length,

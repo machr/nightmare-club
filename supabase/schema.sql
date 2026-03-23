@@ -23,6 +23,7 @@ create table if not exists rotations (
   map_id uuid not null references maps(id) on delete cascade,
   week_start date not null,
   created_at timestamptz not null default now(),
+  credit_text text,
   challenge_id uuid references challenges(id) on delete set null,
   unique (map_id, week_start)
 );
