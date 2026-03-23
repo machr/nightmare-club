@@ -159,6 +159,21 @@
             </div>
         </div>
 
+        <div class="space-y-2">
+            <label
+                for="credit_text"
+                class="text-sm font-semibold text-foreground"
+                >Give thanks and credit</label
+            >
+            <Input
+                id="credit_text"
+                name="credit_text"
+                value={existingRotation?.credit_text ?? ""}
+                placeholder="Thanks to Player 1 and Player 2 for gathering this week's data"
+                class="h-10"
+            />
+        </div>
+
         {#each Object.keys(ROUND_STRUCTURE).map(Number) as roundNum}
             {@const { waves: waveCount, spawns: spawnCount } =
                 ROUND_STRUCTURE[roundNum as keyof typeof ROUND_STRUCTURE]}

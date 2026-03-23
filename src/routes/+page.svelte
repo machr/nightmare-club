@@ -107,6 +107,11 @@
         <p class="text-center text-muted-foreground">No rotation data available yet for this week.</p>
     {:else if data.maps.length === 1}
         <h2 class="mb-3 text-center text-lg font-semibold">{data.maps[0].name}</h2>
+        {#if data.maps[0].rotation?.credit_text}
+            <p class="mb-3 text-center text-sm text-muted-foreground">
+                {data.maps[0].rotation.credit_text}
+            </p>
+        {/if}
         <MapTable rotation={data.maps[0].rotation} mapSlug={data.maps[0].slug} />
     {:else}
         <Tabs value={defaultTab}>
@@ -119,6 +124,11 @@
             </TabsList>
             {#each data.maps as map}
                 <TabsContent value={map.slug}>
+                    {#if map.rotation?.credit_text}
+                        <p class="mb-3 text-center text-sm text-muted-foreground">
+                            {map.rotation.credit_text}
+                        </p>
+                    {/if}
                     <MapTable rotation={map.rotation} mapSlug={map.slug} />
                 </TabsContent>
             {/each}
