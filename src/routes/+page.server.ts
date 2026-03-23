@@ -12,7 +12,7 @@ export const load: PageServerLoad = async (event) => {
 			.from('rotations')
 			.select(`
 				*,
-				challenge:challenges(*),
+				rotation_challenges(round_number, challenge:challenges(*)),
 				rounds(
 					*,
 					waves(
@@ -58,6 +58,15 @@ export const load: PageServerLoad = async (event) => {
 						a.spawn_order - b.spawn_order
 				);
 			}
+		}
+
+		// Attach challenges to their respective rounds
+		const rcByRound = new Map<number, any>();
+		for (const rc of (rotation as any).rotation_challenges ?? []) {
+			if (rc.challenge) rcByRound.set(rc.round_number, rc.challenge);
+		}
+		for (const round of rotation.rounds) {
+			(round as any).challenge = rcByRound.get(round.round_number) ?? undefined;
 		}
 
 		rotationByMapId.set(rotation.map_id, rotation as RotationWithRounds);

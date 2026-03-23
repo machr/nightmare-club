@@ -50,19 +50,35 @@ create table if not exists spawns (
   unique (round_id, spawn_order)
 );
 
+create table if not exists rotation_challenges (
+  rotation_id uuid not null references rotations(id) on delete cascade,
+  challenge_id uuid not null references challenges(id) on delete cascade,
+  round_number int not null check (round_number between 1 and 4),
+  primary key (rotation_id, round_number)
+);
+
 -- ============================================================
 -- Seed data
 -- ============================================================
 
 insert into maps (name, slug, locations) values
-  ('The Spider (Hidden Temple)', 'hidden-temple', '{"Pagoda","Cemetery","Courtyard"}'),
+  ('The Spider (River Village)', 'river-village', '{"Beach","Rice Paddies","Village"}'),
   ('The Kitsune (Frozen Valley)', 'frozen-valley', '{"Waterfall","Hillside","Armory"}'),
   ('The Oni (Broken Castle)', 'broken-castle', '{"Foundry","Burned Garden","Keep"}'),
-  ('The Snake (River Village)', 'river-village', '{"Beach","Rice Paddies","Village"}')
+  ('The Snake (Hidden Temple)', 'hidden-temple', '{"Pagoda","Cemetery","Courtyard"}')
 on conflict (slug) do nothing;
 
 insert into challenges (name, description) values
-  ('lose-location', 'Lose a location at the start of the stage')
+  ('lose-location', 'Lose a location at the start of the stage'),
+  ('enemy-ambush', 'Enemy Ambush'),
+  ('reduced-healing', 'Reduced Healing'),
+  ('lose-a-point', 'Lose a point at the beginning of the round'),
+  ('fast-attacks', 'Enemies have fast attacks'),
+  ('hit-harder', 'Enemies hit harder'),
+  ('ranged-last-hit', 'Last hit requires Ranged or thrown weapon damage'),
+  ('much-more-damage', 'Enemies deal much more damage'),
+  ('increased-cooldowns', 'Role Ability cooldowns are increased'),
+  ('unique-enemy-ambush', 'Unique Enemy Ambush')
 on conflict (name) do nothing;
 
 -- ============================================================
@@ -75,6 +91,7 @@ alter table rotations enable row level security;
 alter table rounds enable row level security;
 alter table waves enable row level security;
 alter table spawns enable row level security;
+alter table rotation_challenges enable row level security;
 
 -- Public read access on all tables
 create policy "Public read access" on maps for select to anon, authenticated using (true);
@@ -100,3 +117,7 @@ create policy "Authenticated delete" on waves for delete to authenticated using 
 create policy "Authenticated insert" on spawns for insert to authenticated with check (true);
 create policy "Authenticated update" on spawns for update to authenticated using (true) with check (true);
 create policy "Authenticated delete" on spawns for delete to authenticated using (true);
+
+create policy "Public read access" on rotation_challenges for select to anon, authenticated using (true);
+create policy "Authenticated insert" on rotation_challenges for insert to authenticated with check (true);
+create policy "Authenticated delete" on rotation_challenges for delete to authenticated using (true);

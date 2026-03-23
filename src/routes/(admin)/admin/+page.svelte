@@ -13,7 +13,7 @@
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     let selectedMapId = $state("");
-    let selectedChallengeId = $state("");
+    let stageChallenges: Record<number, string> = $state({});
 
     let selectedMap = $derived(
         data.maps?.find((m: any) => m.id === selectedMapId) ?? null,
@@ -26,6 +26,11 @@
     let existingRotation = $derived(
         data.existingRotations?.find((r: any) => r.map_id === selectedMapId) ??
             null,
+    );
+
+    // Set of challenge IDs already selected across all stages
+    let usedChallengeIds = $derived(
+        new Set(Object.values(stageChallenges).filter(Boolean)),
     );
 
     // Track second attunement visibility per spawn
@@ -82,10 +87,16 @@
         }
     });
 
-    // Initialise challenge from existing rotation
+    // Initialise per-stage challenges from existing rotation
     $effect(() => {
-        if (existingRotation?.challenge_id) {
-            selectedChallengeId = existingRotation.challenge_id;
+        if (existingRotation?.rotation_challenges) {
+            const init: Record<number, string> = {};
+            for (const rc of existingRotation.rotation_challenges) {
+                init[rc.round_number] = rc.challenge.id;
+            }
+            stageChallenges = init;
+        } else {
+            stageChallenges = {};
         }
     });
 
@@ -112,10 +123,9 @@
 
     <form method="POST" action="?/save" use:enhance class="space-y-8">
         <input type="hidden" name="week_start" value={data.weekStart} />
-        <input type="hidden" name="challenge_id" value={selectedChallengeId} />
         <input type="hidden" name="map_slug" value={selectedMap?.slug ?? ""} />
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="space-y-2">
                 <label
                     for="map_id"
@@ -136,28 +146,8 @@
             </div>
 
             <div class="space-y-2">
-                <label
-                    for="challenge_id"
-                    class="text-sm font-semibold text-foreground"
-                    >Challenge</label
-                >
-                <select
-                    id="challenge_id"
-                    class={selectClass}
-                    bind:value={selectedChallengeId}
-                >
-                    <option value="">No Challenge</option>
-                    {#each data.challenges as challenge}
-                        <option value={challenge.id}
-                            >{challenge.description}</option
-                        >
-                    {/each}
-                </select>
-            </div>
-
-            <div class="space-y-2">
                 <span class="text-sm font-semibold text-foreground"
-                    >Week Start (Saturday)</span
+                    >Week Start (Tuesday)</span
                 >
                 <div
                     class="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm"
@@ -170,10 +160,37 @@
         {#each Object.keys(ROUND_STRUCTURE).map(Number) as roundNum}
             {@const { waves: waveCount, spawns: spawnCount } =
                 ROUND_STRUCTURE[roundNum as keyof typeof ROUND_STRUCTURE]}
+            {@const currentChallenge = stageChallenges[roundNum] ?? ""}
             <div class="rounded-lg border-2 border-border p-4 space-y-4">
-                <h3 class="text-lg font-bold text-foreground">
-                    Stage {roundNum}
-                </h3>
+                <div class="flex items-center justify-between gap-4">
+                    <h3 class="text-lg font-bold text-foreground">
+                        Stage {roundNum}
+                    </h3>
+                    <div class="w-64">
+                        <select
+                            class={selectClass}
+                            value={currentChallenge}
+                            onchange={(e) =>
+                                (stageChallenges[roundNum] = (e.target as HTMLSelectElement).value)}
+                        >
+                            <option value="">No Challenge</option>
+                            {#each data.challenges as challenge}
+                                <option
+                                    value={challenge.id}
+                                    disabled={usedChallengeIds.has(challenge.id) &&
+                                        challenge.id !== currentChallenge}
+                                >
+                                    {challenge.name}
+                                </option>
+                            {/each}
+                        </select>
+                    </div>
+                    <input
+                        type="hidden"
+                        name={`challenge_round_${roundNum}`}
+                        value={currentChallenge}
+                    />
+                </div>
 
                 {#each Array.from({ length: waveCount }, (_, i) => i + 1) as waveNum}
                     <div class="space-y-2">

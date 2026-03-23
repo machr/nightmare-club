@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.select(
 			`
 			*,
-			challenge:challenges(*),
+			rotation_challenges(round_number, challenge:challenges(*)),
 			rounds:rounds(
 				*,
 				waves:waves(
@@ -52,7 +52,6 @@ export const actions: Actions = {
 
 		const map_id = formData.get('map_id') as string;
 		const week_start = formData.get('week_start') as string;
-		const challenge_id = (formData.get('challenge_id') as string) || null;
 		const map_slug = formData.get('map_slug') as string;
 		const mapHasAttunements = ATTUNEMENT_MAP_SLUGS.has(map_slug);
 
@@ -70,19 +69,41 @@ export const actions: Actions = {
 				.maybeSingle();
 
 			if (existing) {
-				// Delete cascades through rounds -> waves -> spawns
+				// Delete cascades through rounds -> waves -> spawns + rotation_challenges
 				await supabase.from('rotations').delete().eq('id', existing.id);
 			}
 
 			// Insert new rotation
 			const { data: rotation, error: rotError } = await supabase
 				.from('rotations')
-				.insert({ map_id, week_start, challenge_id })
+				.insert({ map_id, week_start })
 				.select()
 				.single();
 
 			if (rotError || !rotation) {
 				return fail(500, { error: `Failed to create rotation: ${rotError?.message}` });
+			}
+
+			// Insert per-stage challenge associations
+			const challengeRows = [];
+			for (let r = 1; r <= ROUND_COUNT; r++) {
+				const challengeId = (formData.get(`challenge_round_${r}`) as string) || null;
+				if (challengeId) {
+					challengeRows.push({
+						rotation_id: rotation.id,
+						challenge_id: challengeId,
+						round_number: r
+					});
+				}
+			}
+			if (challengeRows.length > 0) {
+				const { error: challengeError } = await supabase
+					.from('rotation_challenges')
+					.insert(challengeRows);
+
+				if (challengeError) {
+					return fail(500, { error: `Failed to save challenges: ${challengeError.message}` });
+				}
 			}
 
 			for (let r = 1; r <= ROUND_COUNT; r++) {
