@@ -22,7 +22,7 @@ Every Tuesday at 1:00 AM Melbourne time, spawn rotations reset. Contributors log
 - Stage 1–3: 3 spawns per wave
 - Stage 4: 4 spawns per wave
 - Each spawn has a location (map-specific) and 1–2 attunements (Sun / Moon / Storm)
-- Optional weekly challenge per rotation (e.g. "Lose a location")
+- Optional weekly challenges per rotation (e.g. "Lose a location")
 
 ---
 
