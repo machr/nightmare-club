@@ -11,8 +11,20 @@ declare
   v_challenge_id uuid;
   v_week_start date;
 begin
-  -- Calculate most recent Saturday
-  v_week_start := current_date - ((extract(dow from current_date)::int + 1) % 7);
+  -- Calculate the current rotation week start:
+  -- Tuesday 1:00 AM Australia/Melbourne, stored as that Tuesday's date.
+  v_week_start := (
+    timezone('Australia/Melbourne', now())::date
+    - (
+      ((extract(dow from timezone('Australia/Melbourne', now()))::int - 2 + 7) % 7)
+      + case
+          when extract(dow from timezone('Australia/Melbourne', now()))::int = 2
+            and extract(hour from timezone('Australia/Melbourne', now()))::int < 1
+          then 7
+          else 0
+        end
+    )
+  );
 
   -- Get challenge ID
   select id into v_challenge_id from challenges where name = 'lose-location';

@@ -3,14 +3,14 @@ import type { MapWithRotation, RotationWithRounds, RoundWithWaves } from '$lib/t
 import { getCurrentWeekStart } from '$lib/dates';
 
 export const load: PageServerLoad = async (event) => {
-	const weekStart = getCurrentWeekStart();
+  const weekStart = getCurrentWeekStart();
 
-	// Fetch maps and rotations in parallel (2 queries instead of N+1)
-	const [mapsResult, rotationsResult] = await Promise.all([
-		event.locals.supabase.from('maps').select('*').order('name'),
-		event.locals.supabase
-			.from('rotations')
-			.select(`
+  // Fetch maps and rotations in parallel (2 queries instead of N+1)
+  const [mapsResult, rotationsResult] = await Promise.all([
+    event.locals.supabase.from('maps').select('*').order('name'),
+    event.locals.supabase
+      .from('rotations')
+      .select(`
 				*,
 				rotation_challenges(round_number, challenge:challenges(*)),
 				rounds(
@@ -21,71 +21,69 @@ export const load: PageServerLoad = async (event) => {
 					)
 				)
 			`)
-			.eq('week_start', weekStart)
-		.order('created_at', { ascending: false })
-		.limit(1)
-	]);
+      .eq('week_start', weekStart)
+      .order('created_at', { ascending: false })
+  ]);
 
-	if (mapsResult.error) {
-		console.error('Error fetching maps:', mapsResult.error);
-	}
-	if (rotationsResult.error) {
-		console.error('Error fetching rotations:', rotationsResult.error);
-	}
+  if (mapsResult.error) {
+    console.error('Error fetching maps:', mapsResult.error);
+  }
+  if (rotationsResult.error) {
+    console.error('Error fetching rotations:', rotationsResult.error);
+  }
 
-	const maps = mapsResult.data;
-	const rotations = rotationsResult.data;
+  const maps = mapsResult.data;
+  const rotations = rotationsResult.data;
+  if (!maps || maps.length === 0) {
+    return { maps: [] as MapWithRotation[] };
+  }
 
-	if (!maps || maps.length === 0) {
-		return { maps: [] as MapWithRotation[] };
-	}
+  // Index rotations by map_id for O(1) lookup
+  const rotationByMapId = new Map<string, RotationWithRounds>();
+  for (const rotation of rotations ?? []) {
+    // Sort rounds by round_number
+    rotation.rounds.sort(
+      (a: RoundWithWaves, b: RoundWithWaves) => a.round_number - b.round_number
+    );
 
-	// Index rotations by map_id for O(1) lookup
-	const rotationByMapId = new Map<string, RotationWithRounds>();
-	for (const rotation of rotations ?? []) {
-		// Sort rounds by round_number
-		rotation.rounds.sort(
-			(a: RoundWithWaves, b: RoundWithWaves) => a.round_number - b.round_number
-		);
+    // Sort waves and spawns within each round
+    for (const round of rotation.rounds) {
+      round.waves.sort(
+        (a: { wave_number: number }, b: { wave_number: number }) =>
+          a.wave_number - b.wave_number
+      );
+      for (const wave of round.waves) {
+        wave.spawns.sort(
+          (a: { spawn_order: number }, b: { spawn_order: number }) =>
+            a.spawn_order - b.spawn_order
+        );
+      }
+    }
 
-		// Sort waves and spawns within each round
-		for (const round of rotation.rounds) {
-			round.waves.sort(
-				(a: { wave_number: number }, b: { wave_number: number }) =>
-					a.wave_number - b.wave_number
-			);
-			for (const wave of round.waves) {
-				wave.spawns.sort(
-					(a: { spawn_order: number }, b: { spawn_order: number }) =>
-						a.spawn_order - b.spawn_order
-				);
-			}
-		}
+    // Attach challenges to their respective rounds
+    const rcByRound = new Map<number, any>();
+    for (const rc of (rotation as any).rotation_challenges ?? []) {
+      if (rc.challenge) rcByRound.set(rc.round_number, rc.challenge);
+    }
+    for (const round of rotation.rounds) {
+      (round as any).challenge = rcByRound.get(round.round_number) ?? undefined;
+    }
 
-		// Attach challenges to their respective rounds
-		const rcByRound = new Map<number, any>();
-		for (const rc of (rotation as any).rotation_challenges ?? []) {
-			if (rc.challenge) rcByRound.set(rc.round_number, rc.challenge);
-		}
-		for (const round of rotation.rounds) {
-			(round as any).challenge = rcByRound.get(round.round_number) ?? undefined;
-		}
+    rotationByMapId.set(rotation.map_id, rotation as RotationWithRounds);
+  }
 
-		rotationByMapId.set(rotation.map_id, rotation as RotationWithRounds);
-	}
+  // Join maps with their rotations, only include maps that have rotation data
+  const mapsWithRotations: MapWithRotation[] = maps
+    .filter((map) => rotationByMapId.has(map.id))
+    .map((map) => ({
+      ...map,
+      rotation: rotationByMapId.get(map.id)!
+    }));
 
-	// Join maps with their rotations, only include maps that have rotation data
-	const mapsWithRotations: MapWithRotation[] = maps
-		.filter((map) => rotationByMapId.has(map.id))
-		.map((map) => ({
-			...map,
-			rotation: rotationByMapId.get(map.id)!
-		}));
+  // Cache at Vercel CDN edge: 1 hour, serve stale up to 24 hours while revalidating
+  event.setHeaders({
+    'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+  });
 
-	// Cache at Vercel CDN edge: 1 hour, serve stale up to 24 hours while revalidating
-	event.setHeaders({
-		'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-	});
-
-	return { maps: mapsWithRotations };
+  return { maps: mapsWithRotations };
 };

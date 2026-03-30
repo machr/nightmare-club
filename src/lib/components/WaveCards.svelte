@@ -48,7 +48,7 @@
                 </div>
 
                 <!-- Wave cards -->
-                <div class="space-y-3">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
                     {#each round.waves as wave}
                         {@const globalWave = cumulativeWaveNumber(round.round_number, wave.wave_number)}
                         <div class="rounded-lg border border-white/25 px-4 pb-4 pt-3.5">

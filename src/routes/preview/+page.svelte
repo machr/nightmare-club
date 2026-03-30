@@ -8,7 +8,7 @@
 
     let selectedMap = $state(0);
     let downloading = $state(false);
-    let captureTarget: HTMLDivElement;
+    let captureTarget = $state<HTMLDivElement | undefined>(undefined);
 
     let currentMap = $derived(data.maps[selectedMap]);
 
@@ -47,7 +47,7 @@
     }
 </script>
 
-<div class="min-h-screen px-4 py-6" style="background: #131313;">
+<div class="mx-auto min-h-screen max-w-6xl px-4 py-6" style="background: #131313;">
     {#if data.maps.length === 0}
         <p class="text-center text-[#999]">No rotation data available.</p>
     {:else}
@@ -68,54 +68,57 @@
 
         <div bind:this={captureTarget}>
             <!-- Header -->
-            <div class="mb-8 text-center">
-                <!-- Logo -->
-                <div class="mb-3 flex justify-center">
-                    <img src="/nightmare-logo.svg" alt="Nightmare Club" class="h-16 w-auto" />
-                </div>
+            <div class="mb-8">
+                <!-- Top row: logo+title (left) / countdown (right) -->
+                <div class="flex flex-col items-center text-center md:flex-row md:items-center md:text-left">
+                    <!-- Logo + Title -->
+                    <div class="flex flex-col items-center md:flex-row md:items-center md:gap-4">
+                        <img src="/nightmare-logo.svg" alt="Nightmare Club" class="mb-3 h-16 w-auto md:mb-0 md:h-20" />
+                        <div>
+                            <h1 class="text-2xl font-bold uppercase tracking-widest text-white md:text-4xl">
+                                Nightmare Club
+                            </h1>
+                            <p class="mt-1 text-sm font-medium uppercase tracking-[0.25em] text-white/70">
+                                Spawn Rotations
+                            </p>
+                        </div>
+                    </div>
 
-                <!-- Title -->
-                <h1 class="text-2xl font-bold uppercase tracking-widest text-white">
-                    Nightmare Club
-                </h1>
-                <p class="mt-1 text-sm font-medium uppercase tracking-[0.25em] text-white/70">
-                    Spawn Rotations
-                </p>
+                    <!-- Countdown (right on desktop) -->
+                    <div class="mt-4 md:mt-0 md:ml-auto">
+                        <ResetCountdown />
+                    </div>
+                </div>
 
                 <!-- Divider -->
-                <div class="mx-auto my-5 h-px w-full max-w-xs" style="background: white;"></div>
+                <div class="my-5 h-px w-full" style="background: white;"></div>
 
-                <!-- Countdown -->
-                <div class="mb-5">
-                    <ResetCountdown />
-                </div>
+                <!-- Map name (left) + Download button (right) -->
+                <div class="flex flex-col items-center text-center md:flex-row md:items-start md:text-left">
+                    {#if currentMap}
+                        <div>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-white md:text-lg">
+                                {currentMap.name.replace("(", "- ").replace(")", "").toUpperCase()}
+                            </h2>
+                            {#if currentMap.rotation?.credit_text}
+                                <p class="mt-1 text-xs" style="color: #FFBD39;">
+                                    {currentMap.rotation.credit_text}
+                                </p>
+                            {/if}
+                        </div>
+                    {/if}
 
-                <!-- Download button -->
-                <div data-html2img-ignore>
-                    <button
-                        class="inline-flex items-center gap-2 rounded-md px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors"
-                        style="background: #FFBD39; color: #131313;"
-                        onclick={downloadAsJpeg}
-                        disabled={downloading}
-                    >
-                        <Download class="h-3.5 w-3.5" />
-                        {downloading ? "Saving..." : "Download as Image"}
-                    </button>
-                </div>
-
-                <!-- Map name & credits -->
-                {#if currentMap}
-                    <div class="mt-6">
-                        <h2 class="text-sm font-bold uppercase tracking-wider text-white">
-                            {currentMap.name.replace("(", "- ").replace(")", "").toUpperCase()}
-                        </h2>
-                        {#if currentMap.rotation?.credit_text}
-                            <p class="mt-1 text-xs" style="color: #FFBD39;">
-                                {currentMap.rotation.credit_text}
-                            </p>
-                        {/if}
+                    <div class="mt-4 md:mt-0 md:ml-auto" data-html2img-ignore>
+                        <button
+                            class="inline-flex items-center gap-2 rounded-md border border-transparent bg-[#FFBD39] px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#131313] transition-colors md:border-white md:bg-transparent md:text-white"
+                            onclick={downloadAsJpeg}
+                            disabled={downloading}
+                        >
+                            <Download class="h-3.5 w-3.5" />
+                            {downloading ? "Saving..." : "Download as Image"}
+                        </button>
                     </div>
-                {/if}
+                </div>
             </div>
 
             <!-- Wave cards -->
