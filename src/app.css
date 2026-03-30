@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wdth,wght@0,75..100,300..800;1,75..100,300..800&display=swap');
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *, .poster, .poster *));
 
 :root {
 	--font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
@@ -45,6 +45,46 @@
 	--table-subtext: hsl(214 20% 78%);
 	--table-stage-text: hsl(210 40% 98%);
 	--table-note: hsl(210 40% 96%);
+}
+
+.poster {
+	--background: hsl(0 0% 7.5%);
+	--foreground: hsl(0 0% 100%);
+	--card: hsl(0 0% 10%);
+	--card-foreground: hsl(0 0% 100%);
+	--popover: hsl(0 0% 10%);
+	--popover-foreground: hsl(0 0% 100%);
+	--primary: hsl(0 0% 100%);
+	--primary-foreground: hsl(0 0% 7.5%);
+	--secondary: hsl(0 0% 15%);
+	--secondary-foreground: hsl(0 0% 100%);
+	--muted: hsl(0 0% 15%);
+	--muted-foreground: hsl(0 0% 65%);
+	--accent: hsl(0 0% 15%);
+	--accent-foreground: hsl(0 0% 100%);
+	--destructive: hsl(0 63% 55%);
+	--destructive-foreground: hsl(0 0% 100%);
+	--border: hsl(0 0% 100% / 0.15);
+	--input: hsl(0 0% 100% / 0.15);
+	--ring: hsl(0 0% 65%);
+	--sidebar-background: hsl(0 0% 10%);
+	--sidebar-foreground: hsl(0 0% 90%);
+	--sidebar-primary: hsl(0 0% 100%);
+	--sidebar-primary-foreground: hsl(0 0% 7.5%);
+	--sidebar-accent: hsl(0 0% 15%);
+	--sidebar-accent-foreground: hsl(0 0% 100%);
+	--sidebar-border: hsl(0 0% 100% / 0.15);
+	--sidebar-ring: hsl(0 0% 65%);
+
+	--table-stage: hsl(0 0% 10%);
+	--table-stage-header: hsl(0 0% 12%);
+	--table-grid: hsl(0 0% 100% / 0.15);
+	--table-column-alt: hsl(0 0% 13% / 0.9);
+	--table-wave: hsl(0 0% 65%);
+	--table-text: hsl(0 0% 100%);
+	--table-subtext: hsl(0 0% 78%);
+	--table-stage-text: hsl(0 0% 100%);
+	--table-note: hsl(0 0% 96%);
 }
 
 .light {
@@ -131,6 +171,10 @@
 
 	html.light {
 		color-scheme: light;
+	}
+
+	html.poster {
+		color-scheme: dark;
 	}
 
 	body {

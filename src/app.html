@@ -18,10 +18,11 @@
     <script>
         (() => {
             const key = 'nightmare-club-theme';
+            const valid = ['poster', 'dark', 'light'];
             const stored = localStorage.getItem(key);
-            const theme = stored === 'light' ? 'light' : 'dark';
+            const theme = valid.includes(stored) ? stored : 'poster';
             const root = document.documentElement;
-            root.classList.remove('dark', 'light');
+            root.classList.remove(...valid);
             root.classList.add(theme);
             root.dataset.theme = theme;
         })();

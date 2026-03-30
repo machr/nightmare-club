@@ -13,7 +13,7 @@
 	let resetMs = $derived(getNextReset(now));
 	let remaining = $derived(resetMs - now);
 
-	function sydneyDay(date: Date): { weekday: number; hour: number; dateStr: string } {
+	function melbourneDay(date: Date): { weekday: number; hour: number; dateStr: string } {
 		const parts = new Intl.DateTimeFormat('en-US', {
 			timeZone: RESET_SCHEDULE.timezone,
 			weekday: 'short',
@@ -38,21 +38,21 @@
 
 	function getNextReset(currentMs: number): number {
 		const date = new Date(currentMs);
-		const syd = sydneyDay(date);
+		const mel = melbourneDay(date);
 
 		// Days until next reset weekday
-		let daysAhead = (RESET_SCHEDULE.weekday - syd.weekday + 7) % 7;
+		let daysAhead = (RESET_SCHEDULE.weekday - mel.weekday + 7) % 7;
 		// If it's already reset day past reset hour, next week
-		if (daysAhead === 0 && syd.hour >= RESET_SCHEDULE.hour) daysAhead = 7;
+		if (daysAhead === 0 && mel.hour >= RESET_SCHEDULE.hour) daysAhead = 7;
 
-		// Build the target date string in Sydney
+		// Build the target date string in Melbourne time
 		const target = new Date(currentMs + daysAhead * 86400000);
-		const targetSyd = sydneyDay(target);
+		const targetMel = melbourneDay(target);
 
-		// Now we need the reset time in Sydney as a UTC timestamp.
-		const targetStr = targetSyd.dateStr;
+		// Convert the Melbourne reset time to a UTC timestamp.
+		const targetStr = targetMel.dateStr;
 		const resetHourStr = String(RESET_SCHEDULE.hour).padStart(2, '0');
-		// Sydney is UTC+10 or UTC+11
+		// Melbourne is UTC+10 or UTC+11 depending on DST.
 		for (const offsetHours of [11, 10]) {
 			const utcMs = new Date(`${targetStr}T${resetHourStr}:00:00Z`).getTime() - offsetHours * 3600000;
 			const check = new Intl.DateTimeFormat('en-US', {
@@ -66,7 +66,7 @@
 		}
 
 		// Fallback with UTC+11
-		return new Date(`${targetSyd.dateStr}T${resetHourStr}:00:00Z`).getTime() - 11 * 3600000;
+		return new Date(`${targetMel.dateStr}T${resetHourStr}:00:00Z`).getTime() - 11 * 3600000;
 	}
 
 	function formatCountdown(ms: number): string {

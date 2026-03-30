@@ -20,9 +20,9 @@ export const ROUND_COUNT = 4;
 /** Maps that support attunement tracking */
 export const ATTUNEMENT_MAP_SLUGS = new Set(['hidden-temple']);
 
-/** Weekly reset: Tuesday 1:00 AM Australia/Sydney */
+/** Weekly reset: Tuesday 1:00 AM Australia/Melbourne */
 export const RESET_SCHEDULE = {
 	weekday: 2, // 0=Sun … 6=Sat; 2=Tuesday
 	hour: 1, // 1:00 AM
-	timezone: 'Australia/Sydney'
+	timezone: 'Australia/Melbourne'
 } as const;

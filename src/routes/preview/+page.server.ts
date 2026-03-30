@@ -22,7 +22,6 @@ export const load: PageServerLoad = async (event) => {
 			`)
 			.eq('week_start', weekStart)
 			.order('created_at', { ascending: false })
-			.limit(1)
 	]);
 
 	if (mapsResult.error) console.error('Error fetching maps:', mapsResult.error);

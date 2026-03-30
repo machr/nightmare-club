@@ -1,6 +1,13 @@
 export const THEME_STORAGE_KEY = 'nightmare-club-theme';
 
-export type Theme = 'dark' | 'light';
+export const THEMES = ['poster', 'dark', 'light'] as const;
+export type Theme = (typeof THEMES)[number];
+
+export const THEME_LABELS: Record<Theme, string> = {
+	poster: 'Poster',
+	dark: 'Table Dark',
+	light: 'Table Light'
+};
 
 export function clampSpawnPoint(value: string): string {
 	return value.slice(0, 15);
@@ -8,18 +15,19 @@ export function clampSpawnPoint(value: string): string {
 
 export function applyTheme(theme: Theme): void {
 	const root = document.documentElement;
-	root.classList.remove('dark', 'light');
+	root.classList.remove(...THEMES);
 	root.classList.add(theme);
 	root.dataset.theme = theme;
 }
 
 export function readStoredTheme(): Theme {
 	if (typeof localStorage === 'undefined') {
-		return 'dark';
+		return 'poster';
 	}
 
 	const stored = localStorage.getItem(THEME_STORAGE_KEY);
-	return stored === 'light' ? 'light' : 'dark';
+	if (stored && THEMES.includes(stored as Theme)) return stored as Theme;
+	return 'poster';
 }
 
 export function persistTheme(theme: Theme): void {

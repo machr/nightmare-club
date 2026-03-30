@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Moon, Sun } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { applyTheme, persistTheme, readStoredTheme, type Theme } from '$lib/theme';
+	import { applyTheme, persistTheme, readStoredTheme, THEMES, THEME_LABELS, type Theme } from '$lib/theme';
 
-	let theme = $state<Theme>('dark');
+	let { theme = $bindable<Theme>('poster') }: { theme?: Theme } = $props();
 
 	function setTheme(nextTheme: Theme) {
 		theme = nextTheme;
@@ -18,19 +16,15 @@
 	});
 </script>
 
-<Button
-	type="button"
-	variant="outline"
-	size="sm"
-	class="gap-1.5"
-	onclick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-	aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
->
-	{#if theme === 'dark'}
-		<Sun class="h-3.5 w-3.5" />
-		Light mode
-	{:else}
-		<Moon class="h-3.5 w-3.5" />
-		Dark mode
-	{/if}
-</Button>
+<div class="segmented-control w-auto">
+	{#each THEMES as t}
+		<button
+			type="button"
+			class="segmented-control__option {theme === t ? 'segmented-control__option--active' : 'segmented-control__option--inactive'}"
+			onclick={() => setTheme(t)}
+			aria-label="Switch to {THEME_LABELS[t]} theme"
+		>
+			{THEME_LABELS[t]}
+		</button>
+	{/each}
+</div>

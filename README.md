@@ -6,14 +6,14 @@ A web app for tracking weekly enemy spawn rotations across maps. Built with Svel
 
 ## Overview
 
-Every Saturday, spawn rotations reset. Contributors log in to the admin page and enter the new rotations. The public display page reads from Supabase and renders clean tables per map.
+Every Tuesday at 1:00 AM Melbourne time, spawn rotations reset. Contributors log in to the admin page and enter the new rotations. The public display page reads from Supabase and renders clean tables per map.
 
 **Maps:**
 
-- **The Spider (Hidden Temple)** — Pagoda, Cemetery, Courtyard
+- **The Spider (River Village)** — Beach, Rice Paddies, Village
 - **The Kitsune (Frozen Valley)** — Waterfall, Hillside, Armory
 - **The Oni (Broken Castle)** — Foundry, Burned Garden, Keep
-- **The Snake (River Village)** — Beach, Rice Paddies, Village
+- **The Snake (Hidden Temple)** — Pagoda, Cemetery, Courtyard
 
 **Structure per map:**
 
@@ -89,4 +89,5 @@ Or paste the SQL directly in the Supabase SQL Editor.
 ## Notes
 
 - Supabase free tier pauses after 1 week of inactivity — read traffic from the public page prevents this
-- `week_start` should always be a Saturday
+- `week_start` stores the Tuesday date for the current rotation week
+- The reset boundary is Tuesday 1:00 AM `Australia/Melbourne`
