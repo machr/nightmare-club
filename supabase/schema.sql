@@ -58,7 +58,7 @@ create table if not exists rotation_challenges (
   rotation_id uuid not null references rotations(id) on delete cascade,
   challenge_id uuid not null references challenges(id) on delete cascade,
   round_number int not null check (round_number between 1 and 4),
-  primary key (rotation_id, round_number)
+  primary key (rotation_id, round_number, challenge_id)
 );
 
 -- ============================================================

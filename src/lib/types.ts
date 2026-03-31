@@ -50,7 +50,7 @@ export type WaveWithSpawns = Wave & {
 
 export type RoundWithWaves = Round & {
 	waves: WaveWithSpawns[];
-	challenge?: Challenge;
+	challenges?: Challenge[];
 };
 
 export type RotationWithRounds = Rotation & {

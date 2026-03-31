@@ -31,9 +31,9 @@
                         >
                             Stage {round.round_number}
                         </h3>
-                        {#if round.challenge}
+                        {#if round.challenges?.length}
                             <span class="map-table-note text-xs font-medium sm:text-sm"
-                                >{round.challenge.description}</span
+                                >{round.challenges.map((c: { description: string }) => c.description).join(' + ')}</span
                             >
                         {/if}
                     </div>

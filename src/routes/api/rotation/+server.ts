@@ -45,10 +45,13 @@ export const GET: RequestHandler = async ({ locals }) => {
 		const rotation = rotations?.[0] ?? null;
 		const hasAttunements = ATTUNEMENT_MAP_SLUGS.has(map.slug);
 
-		// Index challenges by round_number
-		const challengeByRound = new Map<number, any>();
+		// Index challenges by round_number (multiple per stage)
+		const challengesByRound = new Map<number, any[]>();
 		for (const rc of rotation?.rotation_challenges ?? []) {
-			if (rc.challenge) challengeByRound.set(rc.round_number, rc.challenge);
+			if (rc.challenge) {
+				if (!challengesByRound.has(rc.round_number)) challengesByRound.set(rc.round_number, []);
+				challengesByRound.get(rc.round_number)!.push(rc.challenge);
+			}
 		}
 
 		const rounds = rotation?.rounds
@@ -56,10 +59,10 @@ export const GET: RequestHandler = async ({ locals }) => {
 				a.round_number - b.round_number
 			)
 			.map((round: { round_number: number; waves: any[] }) => {
-				const roundChallenge = challengeByRound.get(round.round_number);
+				const roundChallenges = challengesByRound.get(round.round_number) ?? [];
 				return {
 				round: round.round_number,
-				...(roundChallenge && { challenge: { name: roundChallenge.name, description: roundChallenge.description } }),
+				challenges: roundChallenges.map((c: any) => ({ name: c.name, description: c.description })),
 				waves: round.waves
 					.sort((a: { wave_number: number }, b: { wave_number: number }) =>
 						a.wave_number - b.wave_number

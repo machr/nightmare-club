@@ -40,9 +40,9 @@
                     <h3 class="text-xl font-bold uppercase tracking-wide" style="color: #FFBD39;">
                         Stage {round.round_number}
                     </h3>
-                    {#if round.challenge}
+                    {#if round.challenges?.length}
                         <p class="mt-0.5 text-[11px] font-semibold uppercase tracking-widest" style="color: #FFBD39;">
-                            {round.challenge.description}
+                            {round.challenges.map((c: { description: string }) => c.description).join(' + ')}
                         </p>
                     {/if}
                 </div>

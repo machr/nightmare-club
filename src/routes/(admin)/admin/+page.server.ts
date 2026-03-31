@@ -110,9 +110,12 @@ export const actions: Actions = {
 			const rounds: UpsertRotationPayload['rounds'] = [];
 
 			for (let r = 1; r <= ROUND_COUNT; r++) {
-				const challengeId = (formData.get(`challenge_round_${r}`) as string) || null;
-				if (challengeId) {
-					challenges.push({ challenge_id: challengeId, round_number: r });
+				for (let ci = 0; ; ci++) {
+					const challengeId = (formData.get(`challenge_round_${r}_${ci}`) as string) || null;
+					if (challengeId === null) break; // no more challenge fields for this round
+					if (challengeId) {
+						challenges.push({ challenge_id: challengeId, round_number: r });
+					}
 				}
 
 				const { waves: waveCount, spawns: spawnCount } =

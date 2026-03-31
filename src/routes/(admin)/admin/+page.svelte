@@ -15,7 +15,7 @@
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     let selectedMapId = $state("");
-    let stageChallenges: Record<number, string> = $state({});
+    let stageChallenges: Record<number, string[]> = $state({});
 
     let selectedMap = $derived(
         data.maps?.find((m: any) => m.id === selectedMapId) ?? null,
@@ -92,9 +92,10 @@
     // Initialise per-stage challenges from existing rotation
     $effect(() => {
         if (existingRotation?.rotation_challenges) {
-            const init: Record<number, string> = {};
+            const init: Record<number, string[]> = {};
             for (const rc of existingRotation.rotation_challenges) {
-                init[rc.round_number] = rc.challenge.id;
+                if (!init[rc.round_number]) init[rc.round_number] = [];
+                init[rc.round_number].push(rc.challenge.id);
             }
             stageChallenges = init;
         } else {
@@ -177,34 +178,65 @@
         {#each Object.keys(ROUND_STRUCTURE).map(Number) as roundNum}
             {@const { waves: waveCount, spawns: spawnCount } =
                 ROUND_STRUCTURE[roundNum as keyof typeof ROUND_STRUCTURE]}
-            {@const currentChallenge = stageChallenges[roundNum] ?? ""}
+            {@const currentChallenges = stageChallenges[roundNum] ?? [""]}
             <div class="rounded-lg border-2 border-border p-4 space-y-4">
                 <div class="flex items-center justify-between gap-4">
                     <h3 class="text-lg font-bold text-foreground">
                         Stage {roundNum}
                     </h3>
-                    <div class="w-64">
-                        <select
-                            class={selectClass}
-                            value={currentChallenge}
-                            onchange={(e) =>
-                                (stageChallenges[roundNum] = (e.target as HTMLSelectElement).value)}
+                    <div class="flex items-center gap-2">
+                        {#each currentChallenges as challengeId, idx}
+                            <div class="flex items-center gap-1">
+                                <div class="w-52">
+                                    <select
+                                        class={selectClass}
+                                        value={challengeId}
+                                        onchange={(e) => {
+                                            const arr = [...(stageChallenges[roundNum] ?? [""])];
+                                            arr[idx] = (e.target as HTMLSelectElement).value;
+                                            stageChallenges[roundNum] = arr;
+                                        }}
+                                    >
+                                        <option value="">No Challenge</option>
+                                        {#each data.challenges as challenge}
+                                            <option value={challenge.id}>
+                                                {challenge.description}
+                                            </option>
+                                        {/each}
+                                    </select>
+                                </div>
+                                {#if idx > 0}
+                                    <button
+                                        type="button"
+                                        class="text-xs text-destructive hover:text-destructive/80"
+                                        onclick={() => {
+                                            const arr = [...(stageChallenges[roundNum] ?? [""])];
+                                            arr.splice(idx, 1);
+                                            stageChallenges[roundNum] = arr;
+                                        }}
+                                    >
+                                        &times;
+                                    </button>
+                                {/if}
+                                <input
+                                    type="hidden"
+                                    name={`challenge_round_${roundNum}_${idx}`}
+                                    value={challengeId}
+                                />
+                            </div>
+                        {/each}
+                        <button
+                            type="button"
+                            class="text-xs text-muted-foreground hover:text-foreground"
+                            onclick={() => {
+                                const arr = [...(stageChallenges[roundNum] ?? [""])];
+                                arr.push("");
+                                stageChallenges[roundNum] = arr;
+                            }}
                         >
-                            <option value="">No Challenge</option>
-                            {#each data.challenges as challenge}
-                                <option
-                                    value={challenge.id}
-                                >
-                                    {challenge.description}
-                                </option>
-                            {/each}
-                        </select>
+                            +
+                        </button>
                     </div>
-                    <input
-                        type="hidden"
-                        name={`challenge_round_${roundNum}`}
-                        value={currentChallenge}
-                    />
                 </div>
 
                 {#each Array.from({ length: waveCount }, (_, i) => i + 1) as waveNum}

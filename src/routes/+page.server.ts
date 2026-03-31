@@ -60,13 +60,16 @@ export const load: PageServerLoad = async (event) => {
       }
     }
 
-    // Attach challenges to their respective rounds
-    const rcByRound = new Map<number, any>();
+    // Attach challenges to their respective rounds (multiple per stage)
+    const rcByRound = new Map<number, any[]>();
     for (const rc of (rotation as any).rotation_challenges ?? []) {
-      if (rc.challenge) rcByRound.set(rc.round_number, rc.challenge);
+      if (rc.challenge) {
+        if (!rcByRound.has(rc.round_number)) rcByRound.set(rc.round_number, []);
+        rcByRound.get(rc.round_number)!.push(rc.challenge);
+      }
     }
     for (const round of rotation.rounds) {
-      (round as any).challenge = rcByRound.get(round.round_number) ?? undefined;
+      (round as any).challenges = rcByRound.get(round.round_number) ?? [];
     }
 
     rotationByMapId.set(rotation.map_id, rotation as RotationWithRounds);
