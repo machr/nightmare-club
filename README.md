@@ -91,3 +91,69 @@ Or paste the SQL directly in the Supabase SQL Editor.
 - Supabase free tier pauses after 1 week of inactivity — read traffic from the public page prevents this
 - `week_start` stores the Tuesday date for the current rotation week
 - The reset boundary is Tuesday 1:00 AM `Australia/Melbourne`
+
+---
+
+## Public API
+
+The app exposes the current week's rotation as JSON at:
+
+- `/api/v1/rotation` - versioned public endpoint
+- `/api/rotation` - compatibility alias for the same response
+
+This endpoint is intended for read-only consumers such as alternate frontends.
+
+### Update behavior
+
+- The API always returns the rotation for the current `week_start`
+- `week_start` is calculated using the same Tuesday 1:00 AM `Australia/Melbourne` reset logic used by the public site and admin panel
+- When rotations are updated in the admin panel, they are saved against that current `week_start`, so the API reflects the same weekly data
+
+### Response shape
+
+```json
+{
+  "version": "v1",
+  "week_start": "2026-04-07",
+  "generated_at": "2026-04-07T00:05:00.000Z",
+  "maps": [
+    {
+      "name": "The Snake (Hidden Temple)",
+      "slug": "hidden-temple",
+      "locations": ["Pagoda", "Cemetery", "Courtyard"],
+      "credit_text": "Submitted by ...",
+      "updated_at": "2026-04-07T00:03:12.000Z",
+      "rounds": [
+        {
+          "round": 1,
+          "challenges": [
+            {
+              "name": "enemy-ambush",
+              "description": "Enemy Ambush"
+            }
+          ],
+          "waves": [
+            {
+              "wave": 1,
+              "spawns": [
+                {
+                  "location": "Pagoda",
+                  "spawn_point": "A",
+                  "attunements": ["Sun"]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Contract notes
+
+- `attunements` is only present for maps that use attunement tracking
+- `updated_at` is the timestamp of the saved weekly rotation for that map
+- The response is cached for up to 1 hour with stale revalidation enabled
+- Consumers should prefer `/api/v1/rotation` for long-term integrations
