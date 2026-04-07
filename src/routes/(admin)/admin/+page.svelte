@@ -206,9 +206,10 @@
                                     </select>
                                 </div>
                                 {#if idx > 0}
-                                    <button
+                                    <Button
                                         type="button"
-                                        class="text-xs text-destructive hover:text-destructive/80"
+                                        variant="outline"
+                                        class="h-10 w-10 px-2 bg-transparent border-input text-destructive hover:text-destructive/80"
                                         onclick={() => {
                                             const arr = [...(stageChallenges[roundNum] ?? [""])];
                                             arr.splice(idx, 1);
@@ -216,7 +217,7 @@
                                         }}
                                     >
                                         &times;
-                                    </button>
+                                    </Button>
                                 {/if}
                                 <input
                                     type="hidden"
@@ -225,9 +226,10 @@
                                 />
                             </div>
                         {/each}
-                        <button
+                        <Button
                             type="button"
-                            class="text-xs text-muted-foreground hover:text-foreground"
+                            variant="outline"
+                            class="h-10 w-10 px-2 bg-transparent border-input"
                             onclick={() => {
                                 const arr = [...(stageChallenges[roundNum] ?? [""])];
                                 arr.push("");
@@ -235,7 +237,7 @@
                             }}
                         >
                             +
-                        </button>
+                        </Button>
                     </div>
                 </div>
 

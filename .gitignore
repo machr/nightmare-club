@@ -2,7 +2,11 @@ node_modules
 .env
 .env.*
 !.env.example
+.claude/
 .svelte-kit
 build
 .vercel
 vite.config.ts.timestamp*
+.superpowers/
+supabase/.temp/
+.DS_Store

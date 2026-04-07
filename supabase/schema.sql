@@ -85,7 +85,10 @@ insert into challenges (name, description) values
   ('unique-enemy-ambush', 'Unique Enemy Ambush'),
   ('spirit-healing-drunk', 'Spirit Healing makes Ghosts drunk'),
   ('extremely-fast-attacks', 'Extremely fast attacks'),
-  ('ghost-health-drain', 'Ghost''s Health slowly drains')
+  ('ghost-health-drain', 'Ghost''s Health slowly drains'),
+  ('max-health-significantly-reduced', 'Max Health significantly Reduced'),
+  ('reviving-ghosts-much-longer', 'Reviving Ghosts takes much longer'),
+  ('ghost-weapon-cooldowns-increased', 'Ghost Weapon cooldowns are increased')
 on conflict (name) do nothing;
 
 -- ============================================================
