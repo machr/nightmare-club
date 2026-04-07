@@ -21,15 +21,16 @@ type ApiErrorCode =
 	| 'unsupported_media_type'
 	| 'internal_error';
 
-export function ok(body: Record<string, unknown>, status = 200) {
-	return json({ ok: true, ...body }, { status });
+export function ok(body: Record<string, unknown>, status = 200, headers?: HeadersInit) {
+	return json({ ok: true, ...body }, { status, headers });
 }
 
 export function fail(
 	status: number,
 	code: ApiErrorCode,
 	message: string,
-	details?: ApiErrorDetail[]
+	details?: ApiErrorDetail[],
+	headers?: HeadersInit
 ) {
 	return json(
 		{
@@ -40,8 +41,16 @@ export function fail(
 				...(details?.length ? { details } : {})
 			}
 		},
-		{ status }
+		{ status, headers }
 	);
+}
+
+function bearerAuthHeaders(error: 'invalid_token' | 'missing_token') {
+	const description =
+		error === 'missing_token' ? 'Bearer token is required.' : 'Bearer token is invalid.';
+	return {
+		'WWW-Authenticate': `Bearer realm="nightmare-club", error="${error}", error_description="${description}"`
+	};
 }
 
 export function requireBearerToken(request: Request, expectedToken: string | undefined) {
@@ -51,12 +60,12 @@ export function requireBearerToken(request: Request, expectedToken: string | und
 
 	const authorization = request.headers.get('authorization');
 	if (!authorization?.startsWith('Bearer ')) {
-		return fail(401, 'unauthorized', 'Missing bearer token.');
+		return fail(401, 'unauthorized', 'Missing bearer token.', undefined, bearerAuthHeaders('missing_token'));
 	}
 
 	const receivedToken = authorization.slice('Bearer '.length).trim();
 	if (!timingSafeTokenEquals(receivedToken, expectedToken)) {
-		return fail(401, 'unauthorized', 'Invalid bearer token.');
+		return fail(401, 'unauthorized', 'Invalid bearer token.', undefined, bearerAuthHeaders('invalid_token'));
 	}
 
 	return null;
