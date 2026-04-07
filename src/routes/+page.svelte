@@ -12,6 +12,7 @@
   import TsushimaRotationTable from "$lib/components/TsushimaRotationTable.svelte";
   import ResetCountdown from "$lib/components/ResetCountdown.svelte";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+  import { RESET_SCHEDULE, TSUSHIMA_RESET_SCHEDULE } from "$lib/constants";
   import { onMount } from "svelte";
   import { readStoredTheme, type Theme } from "$lib/theme";
   import type { PageData } from "./$types";
@@ -199,7 +200,7 @@
               </div>
 
               <div class="mt-4 md:mt-0 md:ml-auto">
-                <ResetCountdown />
+                <ResetCountdown schedule={RESET_SCHEDULE} />
               </div>
             </div>
 
@@ -248,7 +249,7 @@
               Nightmare Club — Ghost of Yōtei
             </h1>
             <div class="mt-2">
-              <ResetCountdown />
+              <ResetCountdown schedule={RESET_SCHEDULE} />
             </div>
             <div class="mt-3" data-html2img-ignore>
               <Button
@@ -352,7 +353,7 @@
               </div>
 
               <div class="mt-4 md:mt-0 md:ml-auto">
-                <ResetCountdown />
+                <ResetCountdown schedule={TSUSHIMA_RESET_SCHEDULE} />
               </div>
             </div>
 
@@ -401,7 +402,7 @@
               Nightmare Club — Ghost of Tsushima
             </h1>
             <div class="mt-2">
-              <ResetCountdown />
+              <ResetCountdown schedule={TSUSHIMA_RESET_SCHEDULE} />
             </div>
             <div class="mt-3" data-html2img-ignore>
               <Button

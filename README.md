@@ -11,7 +11,10 @@ It currently uses Supabase for Postgres, auth, and browser/server clients, but t
 - Exposes authenticated bot ingest endpoints for machine-written updates.
 - Stores Tsushima survival metadata and weekly layouts separately from the Yotei rotation tables.
 
-Weekly reset logic is based on Tuesday 1:00 AM in `Australia/Melbourne`. The stored `week_start` value is the Tuesday date for that rotation week.
+Weekly rotation anchors differ by game:
+
+- **Ghost of Yōtei:** Tuesday 1:00 AM in `Australia/Melbourne` (in-game reset aligned with Melbourne). The stored `week_start` is that Tuesday’s calendar date (`YYYY-MM-DD`).
+- **Ghost of Tsushima:** weekly in-game refresh boundary on **Friday** (anchored in code to the same moment as the game’s Friday reset; the countdown on the site is **your browser’s local time**). The stored `week_start` is that week’s **Friday** date (`YYYY-MM-DD`).
 
 ## Stack
 
@@ -141,7 +144,10 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-`week_start` must be a Tuesday in `YYYY-MM-DD` format.
+Path `week_start` must be `YYYY-MM-DD`:
+
+- **Yōtei:** a **Tuesday** (Melbourne rotation week).
+- **Tsushima:** a **Friday** date for the Tsushima rotation week (aligned with the weekly in-game refresh; same anchor the site uses for the countdown in local time).
 
 ### Yotei Payload
 
@@ -217,7 +223,7 @@ Rules:
   "ok": true,
   "game": "tsushima",
   "rotation_id": "uuid",
-  "week_start": "2026-04-07",
+  "week_start": "2026-04-10",
   "map_slug": "the-defence-of-aoi-village",
   "updated": true
 }

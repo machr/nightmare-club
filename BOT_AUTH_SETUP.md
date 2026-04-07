@@ -71,11 +71,11 @@ pnpm dev
 
 ## 5. Smoke Test With curl
 
-Tsushima example:
+Tsushima example (`week_start` must be a **Friday** date for the Tsushima rotation week — same week anchor the site uses; use the calendar Friday that matches the weekly in-game refresh):
 
 ```bash
 curl -i \
-  -X PUT 'http://localhost:5173/api/rotations/tsushima/2026-04-07/the-defence-of-aoi-village' \
+  -X PUT 'http://localhost:5173/api/rotations/tsushima/2026-04-10/the-defence-of-aoi-village' \
   -H 'Authorization: Bearer YOUR_TSUSHIMA_TOKEN' \
   -H 'Content-Type: application/json' \
   --data-raw '{

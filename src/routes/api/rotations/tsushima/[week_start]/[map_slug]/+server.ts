@@ -4,7 +4,7 @@ import {
 	getAdminSupabase,
 	isIsoDate,
 	isPlainObject,
-	isTuesday,
+	isTsushimaWeekAnchorDate,
 	normalizeOptionalString,
 	ok,
 	readJsonBody,
@@ -47,9 +47,13 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	if (contentTypeError) return contentTypeError;
 
 	const { week_start, map_slug } = params;
-	if (!isIsoDate(week_start) || !isTuesday(week_start)) {
-		return fail(400, 'validation_error', 'week_start must be a Tuesday in YYYY-MM-DD format.', [
-			{ path: 'week_start', message: 'Expected a Tuesday date string.' }
+	if (!isIsoDate(week_start) || !isTsushimaWeekAnchorDate(week_start)) {
+		return fail(400, 'validation_error', 'week_start must be a Friday in YYYY-MM-DD format.', [
+			{
+				path: 'week_start',
+				message:
+					'Expected the Friday date that starts this Tsushima rotation week (weekly in-game refresh).'
+			}
 		]);
 	}
 

@@ -6,7 +6,7 @@ import type {
 	TsushimaMapWithRotation,
 	TsushimaPayloadJson
 } from '$lib/types';
-import { getCurrentWeekStart } from '$lib/dates';
+import { getCurrentWeekStart, getTsushimaWeekStart } from '$lib/dates';
 
 function normalizeTsushimaPayload(raw: unknown): TsushimaPayloadJson | null {
 	if (!raw || typeof raw !== 'object' || !('waves' in raw)) return null;
@@ -16,7 +16,8 @@ function normalizeTsushimaPayload(raw: unknown): TsushimaPayloadJson | null {
 }
 
 export const load: PageServerLoad = async (event) => {
-	const weekStart = getCurrentWeekStart();
+	const yoteiWeekStart = getCurrentWeekStart();
+	const tsushimaWeekStart = getTsushimaWeekStart();
 
 	const [mapsResult, rotationsResult, tsushimaMapsResult, tsushimaRotationsResult] =
 		await Promise.all([
@@ -36,10 +37,13 @@ export const load: PageServerLoad = async (event) => {
 				)
 			`
 				)
-				.eq('week_start', weekStart)
+				.eq('week_start', yoteiWeekStart)
 				.order('created_at', { ascending: false }),
 			event.locals.supabase.from('tsushima_maps').select('*').order('name'),
-			event.locals.supabase.from('tsushima_rotations').select('*').eq('week_start', weekStart)
+			event.locals.supabase
+				.from('tsushima_rotations')
+				.select('*')
+				.eq('week_start', tsushimaWeekStart)
 		]);
 
 	if (mapsResult.error) {

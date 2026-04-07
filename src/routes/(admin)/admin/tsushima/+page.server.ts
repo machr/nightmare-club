@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { getCurrentWeekStart } from '$lib/dates';
+import { getTsushimaWeekStart } from '$lib/dates';
 import type { TsushimaMapRow, TsushimaWaveRow } from '$lib/types';
 import {
 	parseTsushimaWavesFromForm,
@@ -14,7 +14,7 @@ function normalizeCreditText(value: FormDataEntryValue | null): string | null {
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const supabase = locals.supabase;
-	const weekStartStr = getCurrentWeekStart();
+	const weekStartStr = getTsushimaWeekStart();
 
 	const [mapsRes, rotRes] = await Promise.all([
 		supabase.from('tsushima_maps').select('*').order('name'),
@@ -46,7 +46,7 @@ export const actions: Actions = {
 		const map_id = formData.get('map_id') as string;
 		const week_code = (formData.get('week_code') as string)?.trim() ?? '';
 		const credit_text = normalizeCreditText(formData.get('credit_text'));
-		const weekStart = getCurrentWeekStart();
+		const weekStart = getTsushimaWeekStart();
 
 		if (!map_id) {
 			return fail(400, { error: 'Map is required.' });

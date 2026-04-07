@@ -104,7 +104,7 @@
 
         <div class="space-y-2">
           <span class="text-sm font-semibold text-foreground"
-            >Week start (Tuesday)</span
+            >Week Start (Friday)</span
           >
           <div
             class="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm"
