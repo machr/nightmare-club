@@ -37,7 +37,8 @@ src/
   routes/
     +page.svelte       public rotation display
     (admin)/admin/     protected admin UI
-    api/rotations/     authenticated bot ingest endpoints
+    api/rotation/      authenticated bot read (GET yotei, tsushima)
+    api/rotations/     authenticated bot ingest (PUT yotei, tsushima)
 supabase/
   schema.sql           base schema and initial seed data
   seed.sql             example current-week Yotei rotations
@@ -130,7 +131,16 @@ If you want to move to plain Postgres or another hosted provider, the minimum pa
 
 The admin workflow is designed around trusted contributors rather than a large multi-role system.
 
-## Bot Ingest API
+## Bot API
+
+### Read (current site week)
+
+Authenticated JSON for tools and bots (no public unauthenticated rotation feed):
+
+- **`GET /api/rotation/yotei`** — `Authorization: Bearer` with **`BOT_API_TOKEN_YOTEI`** (same secret as `PUT /api/rotations/yotei`). Response: `{ "maps": [ { "name", "slug", "credit_text", "rounds": [ { "round", "challenge"?, "waves": [ { "wave", "spawns": [ { "order", "location", "spawn_point", "attunements"? } ] } ] } ] } ] } }` — only maps that have a rotation row for the current Yōtei week (`getCurrentWeekStart`). `Cache-Control: private, no-store`.
+- **`GET /api/rotation/tsushima`** — `Authorization: Bearer` with **`BOT_API_TOKEN_TSUSHIMA`**. Response: `{ "maps": [ { "week_code", "waves" } ] }` for the current Tsushima week anchor.
+
+### Write (ingest)
 
 Two authenticated write endpoints are available:
 

@@ -162,7 +162,15 @@ curl -i \
   }'
 ```
 
-Yotei example:
+Read current Yōtei week (minimal JSON for bots):
+
+```bash
+curl -sS \
+  -H 'Authorization: Bearer YOUR_YOTEI_TOKEN' \
+  'http://localhost:5173/api/rotation/yotei'
+```
+
+Yotei PUT example:
 
 ```bash
 curl -i \
