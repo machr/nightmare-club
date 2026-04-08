@@ -232,7 +232,16 @@ function validateTsushimaWaves(
 				});
 			}
 
-			if (typeof spawn.zone !== 'string' || !zoneLookup.has(spawn.zone)) {
+			const zoneRaw = typeof spawn.zone === 'string' ? spawn.zone.trim() : '';
+			const spawnRaw = typeof spawn.spawn === 'string' ? spawn.spawn.trim() : '';
+
+			// Empty zone: unset slot; ignore spawn and persist both as empty.
+			if (!zoneRaw) {
+				spawns.push({ order: expectedOrder, zone: '', spawn: '' });
+				continue;
+			}
+
+			if (!zoneLookup.has(zoneRaw)) {
 				details.push({
 					path: `${spawnPath}.zone`,
 					message: `Expected one of: ${map.zones.map((zone) => zone.zone).join(', ')}.`
@@ -240,8 +249,14 @@ function validateTsushimaWaves(
 				continue;
 			}
 
-			const allowedSpawns = zoneLookup.get(spawn.zone)!;
-			if (typeof spawn.spawn !== 'string' || !allowedSpawns.has(spawn.spawn)) {
+			const allowedSpawns = zoneLookup.get(zoneRaw)!;
+			// Zone set, spawn empty: allowed.
+			if (!spawnRaw) {
+				spawns.push({ order: expectedOrder, zone: zoneRaw, spawn: '' });
+				continue;
+			}
+
+			if (!allowedSpawns.has(spawnRaw)) {
 				details.push({
 					path: `${spawnPath}.spawn`,
 					message: `Expected one of: ${Array.from(allowedSpawns).join(', ')}.`
@@ -249,7 +264,7 @@ function validateTsushimaWaves(
 				continue;
 			}
 
-			spawns.push({ order: expectedOrder, zone: spawn.zone, spawn: spawn.spawn });
+			spawns.push({ order: expectedOrder, zone: zoneRaw, spawn: spawnRaw });
 		}
 
 		result.push({ wave: expectedWave, spawns });

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Собирает один SQL-файл для вставки в Supabase SQL Editor (schema, затем migrations по имени).
+# Builds a single SQL file for Supabase SQL Editor (schema, then migrations in filename order).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:-$ROOT/supabase/_bundle_for_sql_editor.sql}"
@@ -13,4 +13,4 @@ OUT="${1:-$ROOT/supabase/_bundle_for_sql_editor.sql}"
   done
 } > "$OUT"
 echo "Written: $OUT"
-echo "Откройте файл и выполните целиком в Supabase → SQL Editor (или по частям при ошибке размера)."
+echo "Open the file and run it in Supabase → SQL Editor (or in chunks if size limits apply)."

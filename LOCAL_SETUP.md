@@ -1,7 +1,7 @@
-# Локальный стенд (кратко)
+# Local setup (short)
 
-- **Форк:** `origin` → `https://github.com/swiezdo/nightmare-club`, `upstream` → `machr/nightmare-club`.
-- **Node:** нужен **20+** (на этой машине обновлено до 20.x для Vite 8). После смены версии Node: `rm -rf node_modules && pnpm install`.
-- **Supabase:** в проекте на [supabase.com](https://supabase.com) выполните в SQL Editor содержимое **`supabase/_bundle_for_sql_editor.sql`** (собирается командой `./scripts/build-supabase-bundle.sh`) **или** по очереди `schema.sql` и все файлы из `supabase/migrations/`. Затем подставьте в **`.env`** реальные `PUBLIC_SUPABASE_*` и `SUPABASE_SERVICE_ROLE_KEY`.
-- **Токены бота:** в `.env` уже сгенерированы `BOT_API_TOKEN_*`; после правок Supabase перезапустите `pnpm dev`.
-- **Проверка:** с реальной БД `curl` из [`BOT_AUTH_SETUP.md`](./BOT_AUTH_SETUP.md) должен вернуть `"ok":true`. С плейсхолдерами Supabase PUT вернёт **404** на неизвестный `map_slug` — это нормально.
+- **Fork:** `origin` → `https://github.com/swiezdo/nightmare-club`, `upstream` → `machr/nightmare-club`.
+- **Node:** **20+** required (this machine was bumped to 20.x for Vite 8). After changing Node: `rm -rf node_modules && pnpm install`.
+- **Supabase:** In your project on [supabase.com](https://supabase.com), run **`supabase/_bundle_for_sql_editor.sql`** in the SQL Editor (build it with `./scripts/build-supabase-bundle.sh`) **or** run `schema.sql` and then each file in `supabase/migrations/` in order. Then set real `PUBLIC_SUPABASE_*` and `SUPABASE_SERVICE_ROLE_KEY` in **`.env`**.
+- **Bot tokens:** `.env` includes generated `BOT_API_TOKEN_*`; after Supabase changes restart `pnpm dev`.
+- **Check:** With a real DB, `curl` from [`BOT_AUTH_SETUP.md`](./BOT_AUTH_SETUP.md) should return `"ok":true`. With Supabase placeholders, PUT may return **404** for an unknown `map_slug` — that is expected.
