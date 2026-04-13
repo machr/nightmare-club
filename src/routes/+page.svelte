@@ -106,21 +106,13 @@
       No rotation data available yet for this week.
     </p>
   {:else}
-    <!-- Mobile: theme on its own row (no overlap). sm+: game centered, theme right. -->
     <div
-      class="mb-6 flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-2"
+      class="mb-6 flex items-start justify-between gap-3"
       data-html2img-ignore
     >
-      <div
-        class="flex shrink-0 justify-end sm:col-start-3 sm:row-start-1 sm:justify-end"
-      >
-        <ThemeToggle bind:theme />
-      </div>
-      <div
-        class="flex justify-center sm:col-start-2 sm:row-start-1"
-      >
+      <div class="flex w-fit justify-start">
         <div
-          class="inline-flex w-fit items-center gap-1 self-center rounded-md border p-0.5 {switchBorder}"
+          class="inline-flex w-fit items-center gap-1 self-start rounded-md border p-0.5 {switchBorder}"
         >
           <button
             type="button"
@@ -158,10 +150,9 @@
           </button>
         </div>
       </div>
-      <div
-        class="hidden sm:col-start-1 sm:row-start-1 sm:block"
-        aria-hidden="true"
-      ></div>
+      <div class="flex w-fit shrink-0 justify-end">
+        <ThemeToggle bind:theme />
+      </div>
     </div>
 
     {#if game === "yotei"}
