@@ -28,7 +28,14 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'ghost-weapon-cooldowns-increased',
 		'unique-enemy-ambush'
 	],
-	// 6–12: not in JSON yet
+	// 6 — hidden-temple
+	[
+		'attunement-suspendable',
+		'attunement-suspendable',
+		'attunement-suspendable',
+		'attunement-suspendable'
+	],
+	// 7–12: not in JSON yet
 	null,
 	null,
 	null,
