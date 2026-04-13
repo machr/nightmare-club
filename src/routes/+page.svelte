@@ -86,12 +86,14 @@
     isPoster ? "border-white/25 bg-transparent" : "border-border bg-secondary/40",
   );
   let switchBtnActive = $derived(
-    isPoster ? "bg-white text-[#131313]" : "bg-card font-semibold text-card-foreground shadow-sm",
+    isPoster
+      ? "bg-white/15 ring-1 ring-white/60"
+      : "bg-card ring-1 ring-primary/50 shadow-sm",
   );
   let switchBtnInactive = $derived(
     isPoster
-      ? "bg-transparent text-white"
-      : "text-muted-foreground hover:text-foreground",
+      ? "bg-transparent opacity-70 hover:opacity-100"
+      : "opacity-65 hover:opacity-100",
   );
 </script>
 
@@ -115,32 +117,44 @@
         <ThemeToggle bind:theme />
       </div>
       <div
-        class="flex w-full justify-center sm:col-start-2 sm:row-start-1 sm:w-auto sm:max-w-none"
+        class="flex justify-center sm:col-start-2 sm:row-start-1"
       >
         <div
-          class="flex min-w-0 flex-1 gap-1 rounded-md border p-0.5 sm:flex-initial sm:flex-nowrap {switchBorder}"
+          class="inline-flex w-fit items-center gap-1 self-center rounded-md border p-0.5 {switchBorder}"
         >
           <button
             type="button"
-            class="min-h-10 min-w-0 flex-1 rounded-[calc(var(--radius)-2px)] px-2 py-2 text-center text-[10px] font-semibold uppercase leading-tight tracking-wide transition-colors sm:min-h-0 sm:flex-none sm:px-4 sm:text-xs whitespace-normal sm:whitespace-nowrap {game ===
+            class="rounded-[calc(var(--radius)-2px)] px-2 py-1.5 transition-colors sm:px-3 {game ===
             'yotei'
               ? switchBtnActive
               : switchBtnInactive}"
             onclick={() => (game = "yotei")}
+            aria-label="Ghost of Yōtei"
           >
-            <span class="sm:hidden">Yōtei</span>
-            <span class="hidden sm:inline">Ghost of Yōtei</span>
+            <img
+              src="/yotei_logo.png"
+              alt="Ghost of Yōtei"
+              class="h-6 w-auto transition-opacity sm:h-7 {game === 'yotei'
+                ? 'opacity-100'
+                : 'opacity-70'}"
+            />
           </button>
           <button
             type="button"
-            class="min-h-10 min-w-0 flex-1 rounded-[calc(var(--radius)-2px)] px-2 py-2 text-center text-[10px] font-semibold uppercase leading-tight tracking-wide transition-colors sm:min-h-0 sm:flex-none sm:px-4 sm:text-xs whitespace-normal sm:whitespace-nowrap {game ===
+            class="rounded-[calc(var(--radius)-2px)] px-2 py-1.5 transition-colors sm:px-3 {game ===
             'tsushima'
               ? switchBtnActive
               : switchBtnInactive}"
             onclick={() => (game = "tsushima")}
+            aria-label="Ghost of Tsushima"
           >
-            <span class="sm:hidden">Tsushima</span>
-            <span class="hidden sm:inline">Ghost of Tsushima</span>
+            <img
+              src="/tsushima_logo.png"
+              alt="Ghost of Tsushima"
+              class="h-6 w-auto transition-opacity sm:h-7 {game === 'tsushima'
+                ? 'opacity-100'
+                : 'opacity-70'}"
+            />
           </button>
         </div>
       </div>
@@ -194,7 +208,7 @@
                   <p
                     class="mt-1 text-sm font-medium uppercase tracking-[0.25em] text-white/70"
                   >
-                    Spawn Rotations
+                    Yōtei Spawn Rotations
                   </p>
                 </div>
               </div>

@@ -36,7 +36,7 @@
                 Nightmare Club Admin
             </h1>
             <div
-                class="flex flex-wrap items-center justify-center gap-1 rounded-md border border-border bg-secondary/40 p-0.5 sm:justify-start"
+                class="inline-flex w-fit flex-wrap items-center justify-center gap-1 self-center rounded-md border border-border bg-secondary/40 p-0.5 sm:self-auto sm:justify-start"
             >
                 <a
                     href="/admin"
@@ -45,8 +45,16 @@
                             variant: yoteiActive ? "default" : "ghost",
                             size: "sm",
                         }),
-                        "text-xs sm:text-sm",
-                    )}>Ghost of Yōtei</a
+                        "px-2 sm:px-3",
+                    )}
+                    aria-label="Ghost of Yōtei"
+                >
+                    <img
+                        src="/yotei_logo.png"
+                        alt="Ghost of Yōtei"
+                        class="h-6 w-auto sm:h-7"
+                    />
+                </a
                 >
                 <a
                     href="/admin/tsushima"
@@ -55,8 +63,16 @@
                             variant: tsushimaActive ? "default" : "ghost",
                             size: "sm",
                         }),
-                        "text-xs sm:text-sm",
-                    )}>Ghost of Tsushima</a
+                        "px-2 sm:px-3",
+                    )}
+                    aria-label="Ghost of Tsushima"
+                >
+                    <img
+                        src="/tsushima_logo.png"
+                        alt="Ghost of Tsushima"
+                        class="h-6 w-auto sm:h-7"
+                    />
+                </a
                 >
             </div>
             <div class="flex items-center justify-end gap-2 sm:ml-auto">
