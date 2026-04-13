@@ -43,10 +43,6 @@
   let zoneByCell = $state(makeEmptyCellState());
   let spawnByCell = $state(makeEmptyCellState());
 
-  function cellLabel(zone: string, spawn: string): string {
-    return zone === spawn ? zone : `${zone} — ${spawn}`;
-  }
-
   let zoneNames = $derived(
     (selectedMap?.zones ?? []).map((z: { zone: string }) => z.zone),
   );
@@ -55,7 +51,7 @@
     const z = selectedMap?.zones.find((x: { zone: string }) => x.zone === zone);
     return (z?.spawns ?? []).map((sp: string) => ({
       value: sp,
-      label: cellLabel(zone, sp),
+      label: sp,
     }));
   }
 
@@ -73,7 +69,7 @@
     }
   });
 
-  /** If zone changes or is cleared, drop spawn when it is not allowed for the zone */
+  /** Keep spawn synced with selected zone (including single-spawn zones). */
   $effect(() => {
     if (!selectedMap) return;
     for (let w = 1; w <= 15; w++) {
@@ -91,6 +87,12 @@
         );
         const allowed = zDef?.spawns ?? [];
         const cur = spawnByCell[key] ?? "";
+        if (allowed.length === 1) {
+          if (cur !== allowed[0]) {
+            spawnByCell[key] = allowed[0];
+          }
+          continue;
+        }
         if (cur && !allowed.includes(cur)) {
           spawnByCell[key] = "";
         }
@@ -218,6 +220,7 @@
                     {@const k = cellKey(waveNum, spawnIdx)}
                     {@const zName = zoneByCell[k] ?? ""}
                     {@const spawnOpts = spawnOptionsForZone(zName)}
+                    {@const hasSingleSpawn = spawnOpts.length === 1}
                     <div
                       class="rounded-md border-2 border-border/60 bg-card p-2 space-y-1.5"
                     >
@@ -236,7 +239,13 @@
                       </div>
                       <div class="flex items-center gap-1 pl-5 min-w-0">
                         {#key zName}
-                          {#if zName && spawnOpts.length > 0}
+                          {#if zName && hasSingleSpawn}
+                            <input
+                              type="hidden"
+                              name={`wave_${waveNum}_spawn_${spawnIdx}_spawn`}
+                              value={spawnOpts[0].value}
+                            />
+                          {:else if zName && spawnOpts.length > 0}
                             <SegmentedControl
                               options={spawnOpts}
                               name={`wave_${waveNum}_spawn_${spawnIdx}_spawn`}
