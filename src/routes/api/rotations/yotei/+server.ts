@@ -401,13 +401,13 @@ function normalizeAttunements(
 		return [];
 	}
 
+	if (value === undefined || value === null) return [];
 	if (!Array.isArray(value)) {
-		details.push({ path, message: 'Expected an array with 1 or 2 attunements.' });
+		details.push({ path, message: 'Expected an array with up to 2 attunements.' });
 		return null;
 	}
-
-	if (value.length < 1 || value.length > 2) {
-		details.push({ path, message: 'Expected 1 or 2 attunements.' });
+	if (value.length > 2) {
+		details.push({ path, message: 'Expected 0 to 2 attunements.' });
 	}
 
 	const allowed = new Set(ATTUNEMENT_NAMES);

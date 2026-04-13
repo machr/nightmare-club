@@ -13,7 +13,6 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 
 	const supabase = locals.supabase;
 	const weekStart = getCurrentWeekStart();
-	const format = new URL(request.url).searchParams.get('format');
 
 	const { data: maps, error: mapsError } = await supabase.from('maps').select('*').order('name');
 
@@ -22,26 +21,6 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 		return json({ error: 'Failed to fetch maps' }, { status: 500 });
 	}
 
-	type LegacyMapRow = {
-		name: string;
-		slug: string;
-		credit_text: string | null;
-		rounds: Array<{
-			round: number;
-			challenge?: { name: string; description: string | null };
-			waves: Array<{
-				wave: number;
-				spawns: Array<{
-					order: number;
-					location: string;
-					spawn_point: string | null;
-					attunements?: string[];
-				}>;
-			}>;
-		}>;
-	};
-
-	const legacyMaps: LegacyMapRow[] = [];
 	const canonicalMaps: ReturnType<typeof buildCanonicalResponseForMap>[] = [];
 
 	for (const map of maps) {
@@ -75,81 +54,27 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 
 		const hasAttunements = ATTUNEMENT_MAP_SLUGS.has(map.slug);
 
-		const challengeByRound = new Map<number, { name: string; description: string | null }>();
 		const challengeSlugByRound = new Map<number, string>();
 		for (const rc of rotation.rotation_challenges ?? []) {
 			const ch = rc.challenge as { name?: string; description?: string | null } | undefined;
 			if (ch?.name) {
-				challengeByRound.set(rc.round_number, {
-					name: ch.name,
-					description: ch.description ?? null
-				});
 				challengeSlugByRound.set(rc.round_number, ch.name);
 			}
 		}
-
-		const roundsSorted =
-			rotation.rounds
-				?.sort((a: { round_number: number }, b: { round_number: number }) =>
-					a.round_number - b.round_number
-				)
-				.map((round: { round_number: number; waves: any[] }) => {
-					const roundChallenge = challengeByRound.get(round.round_number);
-					return {
-						round: round.round_number,
-						...(roundChallenge && { challenge: roundChallenge }),
-						waves: round.waves
-							.sort(
-								(a: { wave_number: number }, b: { wave_number: number }) =>
-									a.wave_number - b.wave_number
-							)
-							.map((wave: { wave_number: number; spawns: any[] }) => ({
-								wave: wave.wave_number,
-								spawns: wave.spawns
-									.sort(
-										(a: { spawn_order: number }, b: { spawn_order: number }) =>
-											a.spawn_order - b.spawn_order
-									)
-									.map(
-										(spawn: {
-											spawn_order: number;
-											location: string;
-											spawn_point: string | null;
-											element: string[];
-										}) => ({
-											order: spawn.spawn_order,
-											location: spawn.location,
-											spawn_point: spawn.spawn_point,
-											...(hasAttunements && { attunements: spawn.element ?? [] })
-										})
-									)
-							}))
-					};
-				}) ?? [];
-
-		if (format === 'canonical') {
-			const rot = rotation as { cycle_week?: number | null; credit_text?: string | null };
-			canonicalMaps.push(
-				buildCanonicalResponseForMap({
-					mapSlug: map.slug,
-					creditText: rot.credit_text ?? null,
-					cycleWeek: rot.cycle_week ?? null,
-					rounds: rotation.rounds ?? [],
-					challengeSlugByRound,
-					hasAttunements
-				})
-			);
-		} else {
-			legacyMaps.push({
-				name: map.name,
-				slug: map.slug,
-				credit_text: rotation.credit_text ?? null,
-				rounds: roundsSorted
-			});
-		}
+		const rot = rotation as { cycle_week?: number | null; credit_text?: string | null };
+		canonicalMaps.push(
+			buildCanonicalResponseForMap({
+				mapSlug: map.slug,
+				creditText: rot.credit_text ?? null,
+				cycleWeek: rot.cycle_week ?? null,
+				rounds: rotation.rounds ?? [],
+				challengeSlugByRound,
+				hasAttunements
+			})
+		);
 	}
 
-	const body = format === 'canonical' ? { maps: canonicalMaps } : { maps: legacyMaps };
+	const body = { maps: canonicalMaps };
 
 	return json(body, {
 		headers: {

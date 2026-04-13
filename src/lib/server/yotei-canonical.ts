@@ -205,10 +205,10 @@ export function canonicalPutToUpsertPayload(
 							}
 						}
 					}
-					if (element.length < 1 || element.length > 2) {
+					if (element.length > 2) {
 						details.push({
 							path: `${pathBase}.attunements`,
-							message: 'Expected 1–2 attunements for this map.'
+							message: 'Expected at most 2 attunements for this map.'
 						});
 					}
 				} else if (Array.isArray(att) && att.length > 0) {
@@ -281,8 +281,8 @@ export function buildCanonicalResponseForMap(params: {
 				location: toYoteiLocationApiSlug(loc),
 				spawn: slug
 			};
-			if (hasAttunements && sp?.element?.length) {
-				cell.attunements = [...sp.element];
+			if (hasAttunements) {
+				cell.attunements = Array.isArray(sp?.element) ? [...sp.element] : [];
 			}
 			spawns.push(cell);
 		}
