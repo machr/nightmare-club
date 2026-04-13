@@ -278,11 +278,11 @@
 	}
 
 	.segmented-control {
-		@apply flex h-9 w-full items-center rounded-md border bg-secondary p-0.5;
+		@apply flex min-h-9 w-full flex-wrap items-stretch rounded-md border bg-secondary p-0.5;
 	}
 
 	.segmented-control__option {
-		@apply flex-1 rounded-[calc(var(--radius)-2px)] px-1 py-2 text-center text-xs transition-colors hover:cursor-pointer;
+		@apply min-w-[2.75rem] max-w-full flex-[1_1_auto] rounded-[calc(var(--radius)-2px)] px-1 py-2 text-center text-xs leading-tight whitespace-normal transition-colors hover:cursor-pointer;
 	}
 
 	.segmented-control__option--active {

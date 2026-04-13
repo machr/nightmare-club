@@ -223,11 +223,13 @@
                 ROUND_STRUCTURE[roundNum as keyof typeof ROUND_STRUCTURE]}
             {@const currentChallenge = stageChallenges[roundNum] ?? ""}
             <div class="rounded-lg border-2 border-border p-4 space-y-4">
-                <div class="flex items-center justify-between gap-4">
-                    <h3 class="text-lg font-bold text-foreground">
+                <div
+                    class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+                >
+                    <h3 class="shrink-0 text-lg font-bold text-foreground">
                         Stage {roundNum}
                     </h3>
-                    <div class="min-w-0 flex-1 max-w-md">
+                    <div class="min-w-0 w-full sm:max-w-md sm:flex-1">
                         {#if challengesLocked && lockedRoundSlugs}
                             <p class="mb-1 text-xs text-muted-foreground">
                                 Challenge cards are fixed for this cycle week (published schedule).
@@ -276,8 +278,8 @@
                         </h4>
                         <div
                             class="grid gap-3 {spawnCount === 3
-                                ? 'grid-cols-3'
-                                : 'grid-cols-2'}"
+                                ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+                                : 'grid-cols-1 md:grid-cols-2'}"
                         >
                             {#each Array.from({ length: spawnCount }, (_, i) => i + 1) as spawnIdx}
                                 {@const existing = getExistingSpawn(
@@ -291,22 +293,28 @@
                                     spawnIdx,
                                 )}
                                 <div
-                                    class="rounded-md border-2 border-border/60 bg-card p-2 space-y-1.5"
+                                    class="min-w-0 space-y-2 rounded-md border-2 border-border/60 bg-card p-2 sm:space-y-1.5"
                                 >
-                                    <div class="flex items-center gap-1">
+                                    <div
+                                        class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-1"
+                                    >
                                         <span
-                                            class="text-xs font-bold text-foreground/60 w-4 shrink-0"
+                                            class="w-4 shrink-0 text-xs font-bold text-foreground/60 sm:pt-0.5"
                                         >
                                             {spawnIdx}
                                         </span>
-                                        <SegmentedControl
-                                            options={locations}
-                                            name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_location`}
-                                            value={existing?.location ?? ""}
-                                            required
-                                        />
+                                        <div class="min-w-0 flex-1">
+                                            <SegmentedControl
+                                                options={locations}
+                                                name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_location`}
+                                                value={existing?.location ?? ""}
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-1 pl-5 min-w-0">
+                                    <div
+                                        class="flex min-w-0 flex-col gap-2 pl-0 sm:flex-row sm:items-center sm:gap-1 sm:pl-5"
+                                    >
                                         <SegmentedControl
                                             options={YOTEI_SPAWN_UI_OPTIONS}
                                             name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_spawn_point`}
@@ -319,7 +327,7 @@
                                     </div>
                                     {#if hasAttunements}
                                         <div
-                                            class="flex items-center gap-2 pl-7"
+                                            class="flex flex-col gap-2 pl-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2 sm:pl-7"
                                         >
                                             <SegmentedControl
                                                 options={ATTUNEMENT_NAMES}
@@ -334,32 +342,36 @@
                                                 allowDeselect={true}
                                             />
                                             {#if hasSecondAttunement(roundNum, waveNum, spawnIdx)}
-                                                <SegmentedControl
-                                                    options={ATTUNEMENT_NAMES}
-                                                    name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_attunement_2`}
-                                                    value={getExistingAttunement(
-                                                        roundNum,
-                                                        waveNum,
-                                                        spawnIdx,
-                                                        1,
-                                                    )}
-                                                    required={false}
-                                                    allowDeselect={true}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    class="text-xs text-destructive hover:text-destructive/80"
-                                                    onclick={() =>
-                                                        (showSecondAttunement[
-                                                            key
-                                                        ] = false)}
+                                                <div
+                                                    class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2"
                                                 >
-                                                    &times;
-                                                </button>
+                                                    <SegmentedControl
+                                                        options={ATTUNEMENT_NAMES}
+                                                        name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_attunement_2`}
+                                                        value={getExistingAttunement(
+                                                            roundNum,
+                                                            waveNum,
+                                                            spawnIdx,
+                                                            1,
+                                                        )}
+                                                        required={false}
+                                                        allowDeselect={true}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        class="shrink-0 self-start text-xs text-destructive hover:text-destructive/80 sm:self-center"
+                                                        onclick={() =>
+                                                            (showSecondAttunement[
+                                                                key
+                                                            ] = false)}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
                                             {:else}
                                                 <button
                                                     type="button"
-                                                    class="text-xs text-muted-foreground hover:text-foreground"
+                                                    class="shrink-0 self-start text-xs text-muted-foreground hover:text-foreground sm:self-center"
                                                     onclick={() =>
                                                         (showSecondAttunement[
                                                             key
