@@ -113,21 +113,8 @@ export function parseTsushimaWavesFromForm(
 	for (let w = 1; w <= WAVE_COUNT; w++) {
 		const spawns: TsushimaWaveSpawn[] = [];
 		for (let s = 1; s <= SPAWN_COUNT; s++) {
-			const raw = (formData.get(`wave_${w}_spawn_${s}`) as string) ?? '';
-			const trimmed = raw.trim();
-			if (trimmed === '') {
-				spawns.push({ order: s, zone: '', spawn: '' });
-				continue;
-			}
-			const tab = '\t';
-			const i = raw.indexOf(tab);
-			if (i < 0) {
-				return {
-					error: `Invalid spawn selection for wave ${w}, slot ${s}.`
-				};
-			}
-			const zone = raw.slice(0, i).trim();
-			const spawn = raw.slice(i + 1).trim();
+			const zone = ((formData.get(`wave_${w}_spawn_${s}_zone`) as string) ?? '').trim();
+			const spawn = ((formData.get(`wave_${w}_spawn_${s}_spawn`) as string) ?? '').trim();
 			if (!zone) {
 				if (spawn) {
 					return {

@@ -3,8 +3,13 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
+  import { SegmentedControl } from "$lib/components/ui/segmented-control";
   import type { PageData, ActionData } from "./$types";
-  import type { TsushimaMapRow } from "$lib/types";
+  import type {
+    TsushimaMapRow,
+    TsushimaPayloadJson,
+    TsushimaRotationRow,
+  } from "$lib/types";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -15,44 +20,87 @@
   );
 
   let existingRotation = $derived(
-    data.existingRotations?.find((r: { map_id: string }) => r.map_id === selectedMapId) ??
-      null,
+    data.existingRotations?.find(
+      (r: TsushimaRotationRow) => r.map_id === selectedMapId,
+    ) ?? null,
   );
 
-  function pairValue(zone: string, spawn: string): string {
-    return `${zone}\t${spawn}`;
+  function cellKey(w: number, s: number): string {
+    return `${w}_${s}`;
   }
+
+  function makeEmptyCellState(): Record<string, string> {
+    const o: Record<string, string> = {};
+    for (let w = 1; w <= 15; w++) {
+      for (let s = 1; s <= 3; s++) {
+        o[cellKey(w, s)] = "";
+      }
+    }
+    return o;
+  }
+
+  /** Keys `wave_spawn` e.g. `3_2` → zone / spawn (all keys preset for bind:value) */
+  let zoneByCell = $state(makeEmptyCellState());
+  let spawnByCell = $state(makeEmptyCellState());
 
   function cellLabel(zone: string, spawn: string): string {
     return zone === spawn ? zone : `${zone} — ${spawn}`;
   }
 
-  function isSelectedPair(
-    w: number,
-    s: number,
-    zone: string,
-    spawn: string,
-  ): boolean {
-    const payload = existingRotation?.payload as
-      | { waves?: { wave: number; spawns: { order: number; zone: string; spawn: string }[] }[] }
-      | undefined;
-    const waves = payload?.waves;
-    if (!waves) return false;
-    const wave = waves.find((x) => x.wave === w);
-    const sp = wave?.spawns?.find((x) => x.order === s);
-    return sp?.zone === zone && sp?.spawn === spawn;
+  let zoneNames = $derived(
+    (selectedMap?.zones ?? []).map((z: { zone: string }) => z.zone),
+  );
+
+  function spawnOptionsForZone(zone: string): { value: string; label: string }[] {
+    const z = selectedMap?.zones.find((x: { zone: string }) => x.zone === zone);
+    return (z?.spawns ?? []).map((sp: string) => ({
+      value: sp,
+      label: cellLabel(zone, sp),
+    }));
   }
 
   $effect(() => {
-    if (form?.savedMapId) {
-      selectedMapId = form.savedMapId;
+    const rot = existingRotation;
+    const waves = (rot?.payload as TsushimaPayloadJson | undefined)?.waves;
+    for (let w = 1; w <= 15; w++) {
+      for (let s = 1; s <= 3; s++) {
+        const key = cellKey(w, s);
+        const wave = waves?.find((x) => x.wave === w);
+        const slot = wave?.spawns?.find((x) => x.order === s);
+        zoneByCell[key] = slot?.zone?.trim() ?? "";
+        spawnByCell[key] = slot?.spawn?.trim() ?? "";
+      }
+    }
+  });
+
+  /** If zone changes or is cleared, drop spawn when it is not allowed for the zone */
+  $effect(() => {
+    if (!selectedMap) return;
+    for (let w = 1; w <= 15; w++) {
+      for (let s = 1; s <= 3; s++) {
+        const key = cellKey(w, s);
+        const zName = zoneByCell[key] ?? "";
+        if (!zName) {
+          if (spawnByCell[key]) {
+            spawnByCell[key] = "";
+          }
+          continue;
+        }
+        const zDef = selectedMap.zones.find(
+          (x: { zone: string }) => x.zone === zName,
+        );
+        const allowed = zDef?.spawns ?? [];
+        const cur = spawnByCell[key] ?? "";
+        if (cur && !allowed.includes(cur)) {
+          spawnByCell[key] = "";
+        }
+      }
     }
   });
 
   $effect(() => {
-    if (selectedMapId) return;
-    if (data.maps?.length === 1) {
-      selectedMapId = data.maps[0].id;
+    if (form?.savedMapId) {
+      selectedMapId = form.savedMapId;
     }
   });
 
@@ -95,7 +143,7 @@
             bind:value={selectedMapId}
             required
           >
-            <option value="" disabled>Select a map…</option>
+            <option value="" disabled>Choose a map</option>
             {#each data.maps as map}
               <option value={map.id}>{map.name}</option>
             {/each}
@@ -156,7 +204,8 @@
           <div class="space-y-4">
             <h3 class="text-lg font-bold text-foreground">Waves (15 × 3 spawns)</h3>
             <p class="text-xs text-muted-foreground">
-              Each slot: valid zone/spawn pair for this map.
+              Zone first, then spawn for that zone (spawn list updates when zone
+              changes).
             </p>
 
             {#each Array.from({ length: 15 }, (_, i) => i + 1) as waveNum}
@@ -166,31 +215,44 @@
                 </h4>
                 <div class="grid gap-3 sm:grid-cols-3">
                   {#each Array.from({ length: 3 }, (_, i) => i + 1) as spawnIdx}
-                    <div class="space-y-1">
-                      <span class="text-xs font-medium text-muted-foreground"
-                        >Spawn {spawnIdx}</span
-                      >
-                      <select
-                        name={`wave_${waveNum}_spawn_${spawnIdx}`}
-                        class={selectClass}
-                        required
-                      >
-                        {#each selectedMap.zones as z}
-                          {#each z.spawns as sp}
-                            <option
-                              value={pairValue(z.zone, sp)}
-                              selected={isSelectedPair(
-                                waveNum,
-                                spawnIdx,
-                                z.zone,
-                                sp,
-                              )}
-                            >
-                              {cellLabel(z.zone, sp)}
-                            </option>
-                          {/each}
-                        {/each}
-                      </select>
+                    {@const k = cellKey(waveNum, spawnIdx)}
+                    {@const zName = zoneByCell[k] ?? ""}
+                    {@const spawnOpts = spawnOptionsForZone(zName)}
+                    <div
+                      class="rounded-md border-2 border-border/60 bg-card p-2 space-y-1.5"
+                    >
+                      <div class="flex items-center gap-1">
+                        <span
+                          class="text-xs font-bold text-foreground/60 w-4 shrink-0"
+                        >
+                          {spawnIdx}
+                        </span>
+                        <SegmentedControl
+                          options={zoneNames}
+                          name={`wave_${waveNum}_spawn_${spawnIdx}_zone`}
+                          bind:value={zoneByCell[k]}
+                          required={false}
+                        />
+                      </div>
+                      <div class="flex items-center gap-1 pl-5 min-w-0">
+                        {#key zName}
+                          {#if zName && spawnOpts.length > 0}
+                            <SegmentedControl
+                              options={spawnOpts}
+                              name={`wave_${waveNum}_spawn_${spawnIdx}_spawn`}
+                              bind:value={spawnByCell[k]}
+                              required={false}
+                              allowDeselect={true}
+                            />
+                          {:else}
+                            <input
+                              type="hidden"
+                              name={`wave_${waveNum}_spawn_${spawnIdx}_spawn`}
+                              value=""
+                            />
+                          {/if}
+                        {/key}
+                      </div>
                     </div>
                   {/each}
                 </div>

@@ -17,6 +17,8 @@ export type Rotation = {
 	week_start: string;
 	created_at: string;
 	credit_text: string | null;
+	/** Survival cycle week 1–12 when set (Yōtei bot alignment). */
+	cycle_week?: number | null;
 	challenge_id: string | null;
 	challenge?: Challenge;
 	rotation_challenges?: { challenge: Challenge; round_number: number }[];
@@ -66,6 +68,8 @@ export type UpsertRotationPayload = {
 	rotation_id?: string | null;
 	map_id: string;
 	week_start: string;
+	/** Survival cycle week 1–12 (optional for legacy). */
+	cycle_week?: number | null;
 	credit_text: string | null;
 	challenges: { challenge_id: string; round_number: number }[];
 	rounds: {

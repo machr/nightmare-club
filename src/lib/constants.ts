@@ -20,6 +20,9 @@ export const ROUND_COUNT = 4;
 /** Maps that support attunement tracking */
 export const ATTUNEMENT_MAP_SLUGS = new Set(['hidden-temple']);
 
+export { YOTEI_SPAWN_SLUGS, YOTEI_SPAWN_UI_OPTIONS } from './yotei-spawn';
+export type { YoteiSpawnSlug } from './yotei-spawn';
+
 /** Shared shape for weekly in-game reset anchoring */
 export type ResetSchedule = {
 	readonly weekday: number;

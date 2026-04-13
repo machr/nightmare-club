@@ -3,13 +3,15 @@ import type { PageServerLoad, Actions } from './$types';
 import { getCurrentWeekStart } from '$lib/dates';
 import { ROUND_COUNT, ROUND_STRUCTURE, ATTUNEMENT_MAP_SLUGS } from '$lib/constants';
 import type { UpsertRotationPayload } from '$lib/types';
+import { normalizeYoteiSpawnSlug } from '$lib/yotei-spawn';
+import { isMapAllowedOnCycleWeek } from '$lib/yotei-schedule';
+import {
+	expectedChallengeIdsForCycleWeek,
+	roundChallengeSlugsForCycleWeek
+} from '$lib/yotei-challenge-schedule';
 
-const SPAWN_POINT_MAX_LENGTH = 15;
-
-function normalizeSpawnPoint(value: FormDataEntryValue | null): string | null {
-	const raw = typeof value === 'string' ? value.trim() : '';
-	if (!raw) return null;
-	return raw.slice(0, SPAWN_POINT_MAX_LENGTH);
+function normalizeSpawnPointFromForm(value: FormDataEntryValue | null): string | null {
+	return normalizeYoteiSpawnSlug(typeof value === 'string' ? value : '');
 }
 
 function normalizeCreditText(value: FormDataEntryValue | null): string | null {
@@ -72,6 +74,17 @@ export const actions: Actions = {
 		const mapHasAttunements = ATTUNEMENT_MAP_SLUGS.has(map_slug);
 		const currentWeekStart = getCurrentWeekStart();
 
+		const cycleWeekRaw = formData.get('cycle_week');
+		const cycleWeek = Number(typeof cycleWeekRaw === 'string' ? cycleWeekRaw : '');
+		if (!Number.isInteger(cycleWeek) || cycleWeek < 1 || cycleWeek > 12) {
+			return fail(400, { error: 'Cycle week must be an integer from 1 to 12.' });
+		}
+		if (!isMapAllowedOnCycleWeek(map_slug, cycleWeek)) {
+			return fail(400, {
+				error: `Map "${map_slug}" is not scheduled for survival cycle week ${cycleWeek}. Pick another week or map (see lib/yotei-schedule.ts).`
+			});
+		}
+
 		if (!map_id) {
 			return fail(400, { error: 'Map is required.' });
 		}
@@ -103,6 +116,31 @@ export const actions: Actions = {
 				}
 
 				resolvedWeekStart = existingRotation.week_start;
+			}
+
+			const scheduleSlugs = roundChallengeSlugsForCycleWeek(cycleWeek);
+			if (scheduleSlugs) {
+				const { data: allChallenges, error: chLoadErr } = await supabase
+					.from('challenges')
+					.select('id, name');
+				if (chLoadErr || !allChallenges) {
+					return fail(500, { error: 'Failed to load challenges for schedule validation.' });
+				}
+				const expectedIds = expectedChallengeIdsForCycleWeek(cycleWeek, allChallenges);
+				if (!expectedIds) {
+					return fail(500, {
+						error:
+							'Published Challenge cards schedule references a slug missing from the database. Sync `challenges.name` with `lib/yotei-challenge-schedule.ts`.'
+					});
+				}
+				for (let r = 1; r <= ROUND_COUNT; r++) {
+					const submitted = (formData.get(`challenge_round_${r}`) as string) || '';
+					if (submitted !== expectedIds[r - 1]) {
+						return fail(400, {
+							error: `Stage ${r}: Challenge cards must match the published schedule for cycle week ${cycleWeek}. Reload the page.`
+						});
+					}
+				}
 			}
 
 			// Build nested payload for the RPC call
@@ -148,12 +186,13 @@ export const actions: Actions = {
 							element = attunement2 ? [attunement1, attunement2] : [attunement1];
 						}
 
+						const spNorm = normalizeSpawnPointFromForm(
+							formData.get(`round_${r}_wave_${w}_spawn_${i}_spawn_point`)
+						);
 						spawns.push({
 							spawn_order: i,
 							location,
-							spawn_point: normalizeSpawnPoint(
-								formData.get(`round_${r}_wave_${w}_spawn_${i}_spawn_point`)
-							),
+							spawn_point: spNorm,
 							element
 						});
 					}
@@ -166,6 +205,7 @@ export const actions: Actions = {
 				rotation_id: existing_rotation_id,
 				map_id,
 				week_start: resolvedWeekStart,
+				cycle_week: cycleWeek,
 				credit_text,
 				challenges,
 				rounds
@@ -198,7 +238,7 @@ export const actions: Actions = {
 				totalElapsedMs
 			});
 
-			return { success: true, savedMapId: map_id };
+			return { success: true, savedMapId: map_id, savedCycleWeek: cycleWeek };
 		} catch (err) {
 			const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
 			return fail(500, { error: message });

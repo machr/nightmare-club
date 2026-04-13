@@ -9,21 +9,51 @@
         ROUND_STRUCTURE,
         ATTUNEMENT_MAP_SLUGS,
     } from "$lib/constants";
-    import { clampSpawnPoint } from "$lib/theme";
+    import { YOTEI_SPAWN_UI_OPTIONS, spawnPointToUiValue } from "$lib/yotei-spawn";
+    import { mapsForCycleWeek } from "$lib/yotei-schedule";
+    import { roundChallengeSlugsForCycleWeek } from "$lib/yotei-challenge-schedule";
     import type { PageData, ActionData } from "./$types";
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
-    let selectedMapId = $state("");
+    /** '' until user picks a survival cycle week (1–12). */
+    let cycleWeek = $state("");
     let stageChallenges: Record<number, string> = $state({});
+
+    let cycleWeekNum = $derived.by(() => {
+        const n = Number(cycleWeek);
+        if (!Number.isInteger(n) || n < 1 || n > 12) return null;
+        return n;
+    });
+
+    let weekChosen = $derived(cycleWeekNum != null);
+
+    let selectedMapId = $derived.by(() => {
+        if (cycleWeekNum == null) return "";
+        const slug = mapsForCycleWeek(cycleWeekNum)[0];
+        const m = data.maps?.find((x: { slug: string }) => x.slug === slug);
+        return m?.id ?? "";
+    });
 
     let selectedMap = $derived(
         data.maps?.find((m: any) => m.id === selectedMapId) ?? null,
     );
+
+    function weekMapLabel(week: number): string {
+        const slug = mapsForCycleWeek(week)[0];
+        const map = data.maps?.find((m: { slug: string; name: string }) => m.slug === slug);
+        const name = map?.name ?? slug ?? "?";
+        return `${week} — ${name}`;
+    }
     let locations = $derived(selectedMap?.locations ?? []);
     let hasAttunements = $derived(
         ATTUNEMENT_MAP_SLUGS.has(selectedMap?.slug ?? ""),
     );
+
+    let lockedRoundSlugs = $derived(
+        cycleWeekNum != null ? roundChallengeSlugsForCycleWeek(cycleWeekNum) : null,
+    );
+    let challengesLocked = $derived(lockedRoundSlugs != null);
 
     let existingRotation = $derived(
         data.existingRotations?.find((r: any) => r.map_id === selectedMapId) ??
@@ -66,11 +96,6 @@
         return `${r}_${w}_${s}`;
     }
 
-    function clipSpawnPointInput(event: Event) {
-        const target = event.currentTarget as HTMLInputElement;
-        target.value = clampSpawnPoint(target.value);
-    }
-
     function hasSecondAttunement(
         roundNum: number,
         waveNum: number,
@@ -82,15 +107,30 @@
         return getExistingAttunement(roundNum, waveNum, spawnIdx, 1) !== "";
     }
 
-    // After save, keep the saved map selected
+    // After save, keep the saved week (and thus map) in sync with server
     $effect(() => {
-        if (form?.savedMapId) {
-            selectedMapId = form.savedMapId;
+        if (form?.success && form.savedCycleWeek != null) {
+            cycleWeek = String(form.savedCycleWeek);
         }
     });
 
-    // Initialise per-stage challenges from existing rotation
+    // Per-stage challenges: fixed by published schedule when locked; else from saved rotation
     $effect(() => {
+        const wn = cycleWeekNum;
+        if (wn == null) return;
+        const locked = roundChallengeSlugsForCycleWeek(wn);
+        if (locked) {
+            const next: Record<number, string> = {};
+            for (let r = 1; r <= 4; r++) {
+                const slug = locked[r - 1];
+                const ch = data.challenges?.find(
+                    (c: { name: string }) => c.name === slug,
+                );
+                next[r] = ch?.id ?? "";
+            }
+            stageChallenges = next;
+            return;
+        }
         if (existingRotation?.rotation_challenges) {
             const init: Record<number, string> = {};
             for (const rc of existingRotation.rotation_challenges) {
@@ -124,32 +164,34 @@
     {/if}
 
     <form method="POST" action="?/save" use:enhance class="space-y-8">
+        <input type="hidden" name="map_id" value={selectedMapId} />
         <input type="hidden" name="map_slug" value={selectedMap?.slug ?? ""} />
         <input type="hidden" name="existing_rotation_id" value={existingRotation?.id ?? ""} />
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="space-y-2">
                 <label
-                    for="map_id"
-                    class="text-sm font-semibold text-foreground">Map</label
+                    for="cycle_week_map"
+                    class="text-sm font-semibold text-foreground"
+                    >Survival cycle week & map (1–12)</label
                 >
                 <select
-                    id="map_id"
-                    name="map_id"
+                    id="cycle_week_map"
+                    name="cycle_week"
                     class={selectClass}
-                    bind:value={selectedMapId}
-                    required
+                    bind:value={cycleWeek}
+                    required={weekChosen}
                 >
-                    <option value="" disabled>Select a map...</option>
-                    {#each data.maps as map}
-                        <option value={map.id}>{map.name}</option>
+                    <option value="" disabled>Select a week</option>
+                    {#each Array.from({ length: 12 }, (_, i) => i + 1) as w (w)}
+                        <option value={w}>{weekMapLabel(w)}</option>
                     {/each}
                 </select>
             </div>
 
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-foreground"
-                    >Week Start (Tuesday)</span
+                    >Site week start (Melbourne)</span
                 >
                 <div
                     class="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm"
@@ -159,6 +201,7 @@
             </div>
         </div>
 
+        {#if weekChosen}
         <div class="space-y-2">
             <label
                 for="credit_text"
@@ -174,6 +217,7 @@
             />
         </div>
 
+        {#key selectedMapId}
         {#each Object.keys(ROUND_STRUCTURE).map(Number) as roundNum}
             {@const { waves: waveCount, spawns: spawnCount } =
                 ROUND_STRUCTURE[roundNum as keyof typeof ROUND_STRUCTURE]}
@@ -183,28 +227,46 @@
                     <h3 class="text-lg font-bold text-foreground">
                         Stage {roundNum}
                     </h3>
-                    <div class="w-64">
-                        <select
-                            class={selectClass}
-                            value={currentChallenge}
-                            onchange={(e) =>
-                                (stageChallenges[roundNum] = (e.target as HTMLSelectElement).value)}
-                        >
-                            <option value="">No Challenge</option>
-                            {#each data.challenges as challenge}
-                                <option
-                                    value={challenge.id}
-                                >
-                                    {challenge.description}
-                                </option>
-                            {/each}
-                        </select>
+                    <div class="min-w-0 flex-1 max-w-md">
+                        {#if challengesLocked && lockedRoundSlugs}
+                            <p class="mb-1 text-xs text-muted-foreground">
+                                Challenge cards are fixed for this cycle week (published schedule).
+                            </p>
+                            <div
+                                class="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-foreground"
+                            >
+                                {data.challenges?.find(
+                                    (c: { id: string }) => c.id === currentChallenge,
+                                )?.description ??
+                                    lockedRoundSlugs[roundNum - 1] ??
+                                    "—"}
+                            </div>
+                            <input
+                                type="hidden"
+                                name={`challenge_round_${roundNum}`}
+                                value={currentChallenge}
+                            />
+                        {:else}
+                            <select
+                                class={selectClass}
+                                value={currentChallenge}
+                                onchange={(e) =>
+                                    (stageChallenges[roundNum] = (e.target as HTMLSelectElement).value)}
+                            >
+                                <option value="">No Challenge</option>
+                                {#each data.challenges as challenge}
+                                    <option value={challenge.id}>
+                                        {challenge.description}
+                                    </option>
+                                {/each}
+                            </select>
+                            <input
+                                type="hidden"
+                                name={`challenge_round_${roundNum}`}
+                                value={currentChallenge}
+                            />
+                        {/if}
                     </div>
-                    <input
-                        type="hidden"
-                        name={`challenge_round_${roundNum}`}
-                        value={currentChallenge}
-                    />
                 </div>
 
                 {#each Array.from({ length: waveCount }, (_, i) => i + 1) as waveNum}
@@ -244,14 +306,15 @@
                                             required
                                         />
                                     </div>
-                                    <div class="pl-5">
-                                        <Input
+                                    <div class="flex items-center gap-1 pl-5 min-w-0">
+                                        <SegmentedControl
+                                            options={YOTEI_SPAWN_UI_OPTIONS}
                                             name={`round_${roundNum}_wave_${waveNum}_spawn_${spawnIdx}_spawn_point`}
-                                            value={existing?.spawn_point ?? ""}
-                                            maxlength={15}
-                                            placeholder="Spawn point"
-                                            class="h-8 text-xs"
-                                            oninput={clipSpawnPointInput}
+                                            value={spawnPointToUiValue(
+                                                existing?.spawn_point,
+                                            )}
+                                            required={false}
+                                            allowDeselect={true}
                                         />
                                     </div>
                                     {#if hasAttunements}
@@ -267,7 +330,8 @@
                                                     spawnIdx,
                                                     0,
                                                 )}
-                                                required
+                                                required={false}
+                                                allowDeselect={true}
                                             />
                                             {#if hasSecondAttunement(roundNum, waveNum, spawnIdx)}
                                                 <SegmentedControl
@@ -279,6 +343,8 @@
                                                         spawnIdx,
                                                         1,
                                                     )}
+                                                    required={false}
+                                                    allowDeselect={true}
                                                 />
                                                 <button
                                                     type="button"
@@ -311,7 +377,9 @@
                 {/each}
             </div>
         {/each}
+        {/key}
 
         <Button type="submit" class="w-full sm:w-auto">Save Rotation</Button>
+        {/if}
     </form>
 </div>

@@ -25,6 +25,7 @@ create table if not exists rotations (
   created_at timestamptz not null default now(),
   credit_text text,
   challenge_id uuid references challenges(id) on delete set null,
+  cycle_week smallint check (cycle_week is null or (cycle_week >= 1 and cycle_week <= 12)),
   unique (map_id, week_start)
 );
 

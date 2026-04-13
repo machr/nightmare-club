@@ -126,7 +126,8 @@ If you want to move to plain Postgres or another hosted provider, the minimum pa
 
 - Sign in through `/login`.
 - Open `/admin`.
-- Enter or edit the current week's rotation data.
+- Pick the **survival cycle week (1–12)** and **map** (allowed pairs are defined in [`src/lib/yotei-schedule.ts`](src/lib/yotei-schedule.ts); update that file when new weeks are announced).
+- Enter or edit the current site week's rotation data (`week_start` is still the Melbourne anchor shown on the form).
 - The public home page reads the latest stored rotations and renders them as tables.
 
 The admin workflow is designed around trusted contributors rather than a large multi-role system.
@@ -137,7 +138,7 @@ The admin workflow is designed around trusted contributors rather than a large m
 
 Authenticated JSON for tools and bots (no public unauthenticated rotation feed):
 
-- **`GET /api/rotation/yotei`** — `Authorization: Bearer` with **`BOT_API_TOKEN_YOTEI`** (same secret as `PUT /api/rotations/yotei`). Response: `{ "maps": [ { "name", "slug", "credit_text", "rounds": [ { "round", "challenge"?, "waves": [ { "wave", "spawns": [ { "order", "location", "spawn_point", "attunements"? } ] } ] } ] } ] } }` — only maps that have a rotation row for the current Yōtei week (`getCurrentWeekStart`). `Cache-Control: private, no-store`.
+- **`GET /api/rotation/yotei`** — `Authorization: Bearer` with **`BOT_API_TOKEN_YOTEI`** (same secret as `PUT /api/rotations/yotei`). Default response is **legacy** nested `rounds` (same shape as before). Add **`?format=canonical`** for the flat bot shape per map: `{ "week", "credits", "map_slug", "waves" (12 UI waves), "challenge_cards_slugs" }` with `location` kebab-case and `spawn` in `left` \| `middle` \| `right` \| `""`; **`attunements`** are included on `hidden-temple` spawns when present. Only maps with a rotation for the current Yōtei week (`getCurrentWeekStart`). `Cache-Control: private, no-store`.
 - **`GET /api/rotation/tsushima`** — `Authorization: Bearer` with **`BOT_API_TOKEN_TSUSHIMA`**. Response: `{ "maps": [ { "week_code", "waves" } ] }` for the current Tsushima week anchor.
 
 ### Write (ingest)
@@ -154,14 +155,17 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-The JSON body must include **`map_slug`**. **`week_start` is not sent**; the server picks the current rotation week using the same rules as the public site (`getCurrentWeekStart` for Yōtei, `getTsushimaWeekStart` for Tsushima). Successful responses echo the stored `week_start` so clients can log which week was written.
+The JSON body must include **`map_slug`**. **`week_start` is not sent**; the server picks the current rotation week using the same rules as the public site (`getCurrentWeekStart` for Yōtei, `getTsushimaWeekStart` for Tsushima). Successful responses echo the stored `week_start` and **`cycle_week`** (survival week 1–12 when set) so clients can log what was written.
 
-### Yotei Payload
+### Yotei Payload (legacy `rounds`)
+
+Do not send **`waves`** and **`rounds`** in the same request.
 
 ```json
 {
   "map_slug": "river-village",
   "credit_text": "Thanks to Player 1 and Player 2",
+  "cycle_week": 3,
   "challenges": [
     { "round": 1, "slug": "lose-location" }
   ],
@@ -175,7 +179,7 @@ The JSON body must include **`map_slug`**. **`week_start` is not sent**; the ser
             {
               "order": 1,
               "location": "Beach",
-              "spawn_point": "A",
+              "spawn_point": "left",
               "attunements": []
             }
           ]
@@ -192,9 +196,14 @@ Rules:
 - rounds 1 to 3 have 3 waves and 3 spawns per wave
 - round 4 has 3 waves and 4 spawns per wave
 - `location` must match the selected map
-- `spawn_point` is optional and capped at 15 characters
+- optional **`cycle_week`** (1–12) is stored on the rotation row for bot alignment
+- `spawn_point` is optional; when set it must be **`left`**, **`middle`**, or **`right`** (stored lowercase)
 - `attunements` are only allowed for `hidden-temple`
 - `slug` must match an existing value in `challenges.name`
+
+### Yotei Payload (canonical bot / flat `waves`)
+
+Send **`week`** (1–12), **`credits`**, **`map_slug`**, **`waves`** (12 entries, global wave index 1–12), and optional **`challenge_cards_slugs`** (up to four challenge **names** / slugs, one per stage). **`location`** may be kebab-case or the exact DB location string. Optional **`attunements`** per spawn on `hidden-temple` only (1–2 entries). Do not include **`rounds`** in the same body.
 
 ### Tsushima Payload
 

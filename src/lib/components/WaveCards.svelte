@@ -1,5 +1,6 @@
 <script lang="ts">
     import { ROUND_STRUCTURE } from "$lib/constants";
+    import { formatYoteiSpawnPointForDisplay } from "$lib/yotei-spawn";
     import type { RotationWithRounds } from "$lib/types";
 
     let {
@@ -22,6 +23,8 @@
     }
 
     function formatSpawnPoint(point: string): string {
+        const d = formatYoteiSpawnPointForDisplay(point);
+        if (d) return d;
         return point.toUpperCase();
     }
 </script>

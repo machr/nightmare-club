@@ -162,13 +162,23 @@ curl -i \
   }'
 ```
 
-Read current Yōtei week (minimal JSON for bots):
+Read current Yōtei week (legacy nested `rounds` — default):
 
 ```bash
 curl -sS \
   -H 'Authorization: Bearer YOUR_YOTEI_TOKEN' \
   'http://localhost:5173/api/rotation/yotei'
 ```
+
+Canonical flat shape (same field names as bot `PUT`): add **`?format=canonical`**.
+
+```bash
+curl -sS \
+  -H 'Authorization: Bearer YOUR_YOTEI_TOKEN' \
+  'http://localhost:5173/api/rotation/yotei?format=canonical'
+```
+
+Yōtei `spawn_point` values are **`left`**, **`middle`**, **`right`**, or omitted. Legacy free-text values should be re-saved from the admin UI or via `PUT` with valid slugs.
 
 Yotei PUT example:
 
@@ -186,19 +196,19 @@ curl -i \
         "round": 1,
         "waves": [
           { "wave": 1, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]},
           { "wave": 2, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]},
           { "wave": 3, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]}
         ]
       },
@@ -206,19 +216,19 @@ curl -i \
         "round": 2,
         "waves": [
           { "wave": 1, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]},
           { "wave": 2, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]},
           { "wave": 3, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]}
         ]
       },
@@ -226,19 +236,19 @@ curl -i \
         "round": 3,
         "waves": [
           { "wave": 1, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]},
           { "wave": 2, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]},
           { "wave": 3, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] }
           ]}
         ]
       },
@@ -246,22 +256,22 @@ curl -i \
         "round": 4,
         "waves": [
           { "wave": 1, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] },
-            { "order": 4, "location": "Beach", "spawn_point": "D", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] },
+            { "order": 4, "location": "Beach", "spawn_point": "left", "attunements": [] }
           ]},
           { "wave": 2, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] },
-            { "order": 4, "location": "Beach", "spawn_point": "D", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] },
+            { "order": 4, "location": "Beach", "spawn_point": "left", "attunements": [] }
           ]},
           { "wave": 3, "spawns": [
-            { "order": 1, "location": "Beach", "spawn_point": "A", "attunements": [] },
-            { "order": 2, "location": "Rice Paddies", "spawn_point": "B", "attunements": [] },
-            { "order": 3, "location": "Village", "spawn_point": "C", "attunements": [] },
-            { "order": 4, "location": "Beach", "spawn_point": "D", "attunements": [] }
+            { "order": 1, "location": "Beach", "spawn_point": "left", "attunements": [] },
+            { "order": 2, "location": "Rice Paddies", "spawn_point": "middle", "attunements": [] },
+            { "order": 3, "location": "Village", "spawn_point": "right", "attunements": [] },
+            { "order": 4, "location": "Beach", "spawn_point": "left", "attunements": [] }
           ]}
         ]
       }

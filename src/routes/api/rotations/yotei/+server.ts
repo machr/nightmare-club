@@ -1,6 +1,5 @@
 import { ATTUNEMENT_MAP_SLUGS, ATTUNEMENT_NAMES, ROUND_COUNT, ROUND_STRUCTURE } from '$lib/constants';
 import {
-	SPAWN_POINT_MAX_LENGTH,
 	collectUnexpectedKeys,
 	fail,
 	getAdminSupabase,
@@ -12,6 +11,11 @@ import {
 	requireJsonRequest,
 	type ApiErrorDetail
 } from '$lib/server/bot-api';
+import {
+	canonicalPutToUpsertPayload,
+	isYoteiCanonicalPutBody
+} from '$lib/server/yotei-canonical';
+import { normalizeYoteiSpawnSlug } from '$lib/yotei-spawn';
 import { getCurrentWeekStart } from '$lib/dates';
 import type { UpsertRotationPayload } from '$lib/types';
 import { env } from '$env/dynamic/private';
@@ -45,6 +49,14 @@ export const PUT: RequestHandler = async ({ request }) => {
 		]);
 	}
 
+	const wavesArr = (body as { waves?: unknown }).waves;
+	const roundsArr = (body as { rounds?: unknown }).rounds;
+	if (Array.isArray(wavesArr) && wavesArr.length > 0 && Array.isArray(roundsArr) && roundsArr.length > 0) {
+		return fail(400, 'validation_error', 'Send either legacy `rounds` or canonical `waves`, not both.', [
+			{ path: '', message: 'Ambiguous payload: remove `rounds` or `waves`.' }
+		]);
+	}
+
 	const map_slug = typeof body.map_slug === 'string' ? body.map_slug.trim() : '';
 	if (!map_slug) {
 		return fail(400, 'validation_error', 'Payload validation failed.', [
@@ -71,7 +83,30 @@ export const PUT: RequestHandler = async ({ request }) => {
 		return fail(500, 'internal_error', 'Failed to load challenge metadata.');
 	}
 
-	const validation = validateYoteiPayload(body, mapResult.data, challengesResult.data, week_start);
+	const bodyObj = body as Record<string, unknown>;
+	let validation:
+		| { valid: true; payload: UpsertRotationPayload }
+		| { valid: false; details: ApiErrorDetail[] };
+
+	if (isYoteiCanonicalPutBody(bodyObj)) {
+		const details: ApiErrorDetail[] = [];
+		const challengeIdBySlug = new Map(challengesResult.data.map((c) => [c.name, c.id]));
+		const payload = canonicalPutToUpsertPayload(
+			bodyObj,
+			mapResult.data,
+			challengeIdBySlug,
+			week_start,
+			details
+		);
+		if (!payload || details.length > 0) {
+			validation = { valid: false, details };
+		} else {
+			validation = { valid: true, payload };
+		}
+	} else {
+		validation = validateYoteiPayload(body, mapResult.data, challengesResult.data, week_start);
+	}
+
 	if (!validation.valid) {
 		return fail(400, 'validation_error', 'Payload validation failed.', validation.details);
 	}
@@ -90,6 +125,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 		rotation_id: rotationId,
 		week_start,
 		map_slug,
+		cycle_week: validation.payload.cycle_week ?? null,
 		updated: true
 	});
 };
@@ -111,13 +147,23 @@ function validateYoteiPayload(
 		};
 	}
 
-	collectUnexpectedKeys(body, ['map_slug', 'credit_text', 'challenges', 'rounds'], '', details);
+	collectUnexpectedKeys(body, ['map_slug', 'credit_text', 'challenges', 'rounds', 'cycle_week'], '', details);
 
 	const creditText = normalizeCreditText(body.credit_text, 'credit_text', details);
 	const challengeLookup = new Map(challenges.map((challenge) => [challenge.name, challenge.id]));
 
 	const challengeItems = validateChallenges(body.challenges, challengeLookup, details);
 	const roundItems = validateRounds(body.rounds, map, details);
+
+	let cycle_week: number | null = null;
+	if (body.cycle_week !== undefined && body.cycle_week !== null && body.cycle_week !== '') {
+		const cw = Number(body.cycle_week);
+		if (!Number.isInteger(cw) || cw < 1 || cw > 12) {
+			details.push({ path: 'cycle_week', message: 'Expected an integer between 1 and 12 or null.' });
+		} else {
+			cycle_week = cw;
+		}
+	}
 
 	if (details.length > 0 || !challengeItems || !roundItems) {
 		return { valid: false, details };
@@ -128,6 +174,7 @@ function validateYoteiPayload(
 		payload: {
 			map_id: map.id,
 			week_start: weekStart,
+			cycle_week,
 			credit_text: creditText,
 			challenges: challengeItems,
 			rounds: roundItems
@@ -290,7 +337,7 @@ function validateRounds(value: unknown, map: MapRow, details: ApiErrorDetail[]) 
 					});
 				}
 
-				const spawnPoint = normalizeSpawnPoint(spawn.spawn_point, `${spawnPath}.spawn_point`, details);
+				const spawnPoint = normalizeYoteiSpawnForApi(spawn.spawn_point, `${spawnPath}.spawn_point`, details);
 				const attunements = normalizeAttunements(
 					spawn.attunements,
 					`${spawnPath}.attunements`,
@@ -327,22 +374,18 @@ function normalizeCreditText(value: unknown, path: string, details: ApiErrorDeta
 	return normalizeOptionalString(value);
 }
 
-function normalizeSpawnPoint(value: unknown, path: string, details: ApiErrorDetail[]) {
+/** Legacy API: only left | middle | right | empty (stored lowercase). */
+function normalizeYoteiSpawnForApi(value: unknown, path: string, details: ApiErrorDetail[]) {
 	if (value === undefined || value === null || value === '') return null;
 	if (typeof value !== 'string') {
 		details.push({ path, message: 'Expected a string or null.' });
 		return null;
 	}
-
-	const trimmed = value.trim();
-	if (trimmed.length > SPAWN_POINT_MAX_LENGTH) {
-		details.push({
-			path,
-			message: `Spawn point must be ${SPAWN_POINT_MAX_LENGTH} characters or fewer.`
-		});
+	const s = normalizeYoteiSpawnSlug(value);
+	if (!s && value.trim()) {
+		details.push({ path, message: 'Expected spawn left, middle, right, or empty.' });
 	}
-
-	return trimmed ? trimmed.slice(0, SPAWN_POINT_MAX_LENGTH) : null;
+	return s;
 }
 
 function normalizeAttunements(

@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { getCurrentWeekStart } from '$lib/dates';
 import { ATTUNEMENT_MAP_SLUGS } from '$lib/constants';
 import { requireBearerToken } from '$lib/server/bot-api';
+import { buildCanonicalResponseForMap } from '$lib/server/yotei-canonical';
 import { env } from '$env/dynamic/private';
 
 /** Read-only Yōtei rotation for the current Melbourne week (same anchor as the home page). Bearer only. */
@@ -12,6 +13,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 
 	const supabase = locals.supabase;
 	const weekStart = getCurrentWeekStart();
+	const format = new URL(request.url).searchParams.get('format');
 
 	const { data: maps, error: mapsError } = await supabase.from('maps').select('*').order('name');
 
@@ -20,7 +22,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 		return json({ error: 'Failed to fetch maps' }, { status: 500 });
 	}
 
-	const result: Array<{
+	type LegacyMapRow = {
 		name: string;
 		slug: string;
 		credit_text: string | null;
@@ -37,7 +39,10 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 				}>;
 			}>;
 		}>;
-	}> = [];
+	};
+
+	const legacyMaps: LegacyMapRow[] = [];
+	const canonicalMaps: ReturnType<typeof buildCanonicalResponseForMap>[] = [];
 
 	for (const map of maps) {
 		const { data: rotations, error: rotError } = await supabase
@@ -71,6 +76,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 		const hasAttunements = ATTUNEMENT_MAP_SLUGS.has(map.slug);
 
 		const challengeByRound = new Map<number, { name: string; description: string | null }>();
+		const challengeSlugByRound = new Map<number, string>();
 		for (const rc of rotation.rotation_challenges ?? []) {
 			const ch = rc.challenge as { name?: string; description?: string | null } | undefined;
 			if (ch?.name) {
@@ -78,10 +84,11 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 					name: ch.name,
 					description: ch.description ?? null
 				});
+				challengeSlugByRound.set(rc.round_number, ch.name);
 			}
 		}
 
-		const rounds =
+		const roundsSorted =
 			rotation.rounds
 				?.sort((a: { round_number: number }, b: { round_number: number }) =>
 					a.round_number - b.round_number
@@ -120,20 +127,33 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 					};
 				}) ?? [];
 
-		result.push({
-			name: map.name,
-			slug: map.slug,
-			credit_text: rotation.credit_text ?? null,
-			rounds
-		});
+		if (format === 'canonical') {
+			const rot = rotation as { cycle_week?: number | null; credit_text?: string | null };
+			canonicalMaps.push(
+				buildCanonicalResponseForMap({
+					mapSlug: map.slug,
+					creditText: rot.credit_text ?? null,
+					cycleWeek: rot.cycle_week ?? null,
+					rounds: rotation.rounds ?? [],
+					challengeSlugByRound,
+					hasAttunements
+				})
+			);
+		} else {
+			legacyMaps.push({
+				name: map.name,
+				slug: map.slug,
+				credit_text: rotation.credit_text ?? null,
+				rounds: roundsSorted
+			});
+		}
 	}
 
-	return json(
-		{ maps: result },
-		{
-			headers: {
-				'Cache-Control': 'private, no-store'
-			}
+	const body = format === 'canonical' ? { maps: canonicalMaps } : { maps: legacyMaps };
+
+	return json(body, {
+		headers: {
+			'Cache-Control': 'private, no-store'
 		}
-	);
+	});
 };

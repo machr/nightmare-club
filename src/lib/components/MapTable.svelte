@@ -1,5 +1,6 @@
 <script lang="ts">
     import { ATTUNEMENTS, ATTUNEMENT_MAP_SLUGS } from "$lib/constants";
+    import { formatYoteiSpawnPointForDisplay } from "$lib/yotei-spawn";
     import type { RotationWithRounds } from "$lib/types";
 
     let {
@@ -91,7 +92,9 @@
                                                     <div
                                                         class="map-table-point text-[11px] font-medium uppercase tracking-wide"
                                                     >
-                                                        {spawn.spawn_point}
+                                                        {formatYoteiSpawnPointForDisplay(
+                                                            spawn.spawn_point,
+                                                        )}
                                                     </div>
                                                 {/if}
                                             </div>
@@ -111,7 +114,9 @@
                                                     <div
                                                         class="map-table-point text-[11px] font-medium uppercase tracking-wide"
                                                     >
-                                                        {spawn.spawn_point}
+                                                        {formatYoteiSpawnPointForDisplay(
+                                                            spawn.spawn_point,
+                                                        )}
                                                     </div>
                                                 {/if}
                                             </div>
@@ -126,7 +131,9 @@
                                                     <div
                                                         class="map-table-point text-[11px] font-medium uppercase tracking-wide"
                                                     >
-                                                        {spawn.spawn_point}
+                                                        {formatYoteiSpawnPointForDisplay(
+                                                            spawn.spawn_point,
+                                                        )}
                                                     </div>
                                                 {/if}
                                             </div>
