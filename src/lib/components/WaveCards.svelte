@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ROUND_STRUCTURE } from "$lib/constants";
+    import { ATTUNEMENTS, ROUND_STRUCTURE } from "$lib/constants";
     import { formatYoteiSpawnPointForDisplay } from "$lib/yotei-spawn";
     import type { RotationWithRounds } from "$lib/types";
 
@@ -26,6 +26,26 @@
         const d = formatYoteiSpawnPointForDisplay(point);
         if (d) return d;
         return point.toUpperCase();
+    }
+
+    function zoneTextStyle(attunements: string[] | undefined): string {
+        const atts = Array.isArray(attunements)
+            ? attunements.map((x) => String(x).trim()).filter(Boolean)
+            : [];
+        if (atts.length === 0) return "";
+
+        const c1 = ATTUNEMENTS[atts[0] as keyof typeof ATTUNEMENTS] ?? "";
+        if (!c1) return "";
+        if (atts.length === 1) return `color: ${c1};`;
+
+        const c2 = ATTUNEMENTS[atts[1] as keyof typeof ATTUNEMENTS] ?? c1;
+        return [
+            `background: linear-gradient(to right, ${c1} 50%, ${c2} 50%)`,
+            "-webkit-background-clip: text",
+            "background-clip: text",
+            "-webkit-text-fill-color: transparent",
+            "color: transparent",
+        ].join("; ");
     }
 </script>
 
@@ -82,18 +102,20 @@
                                 style="grid-template-columns: repeat({spawnCount}, 1fr);"
                             >
                                 {#each wave.spawns as spawn}
+                                    {@const atts = spawn.element ?? []}
                                     <div class="min-w-0 text-center">
                                         <div
                                             class="{spawnCount === 4
-                                                ? 'line-clamp-2 break-words text-[10px] md:text-[13px]'
+                                                ? 'line-clamp-2 break-words text-[11px] md:text-[14px]'
                                                 : 'text-[13px]'} font-bold uppercase leading-tight text-white"
+                                            style={zoneTextStyle(atts)}
                                         >
                                             {formatLocation(spawn.location)}
                                         </div>
                                         {#if spawn.spawn_point}
                                             <div
                                                 class="{spawnCount === 4
-                                                    ? 'mt-1 text-[10px] tracking-wide md:mt-2 md:text-[11px] md:tracking-wider'
+                                                    ? 'mt-1 text-[11px] tracking-wide md:mt-2 md:text-[12px] md:tracking-wider'
                                                     : 'mt-2 text-[11px] tracking-wider'} font-medium uppercase text-white/40"
                                             >
                                                 {formatSpawnPoint(spawn.spawn_point)}
