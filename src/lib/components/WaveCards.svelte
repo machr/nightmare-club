@@ -75,14 +75,27 @@
                             </div>
 
                             <!-- Spawn locations -->
-                            <div class="grid gap-x-3" style="grid-template-columns: repeat({spawnCount}, 1fr);">
+                            <div
+                                class="grid {spawnCount === 4
+                                    ? 'gap-x-1.5 md:gap-x-3'
+                                    : 'gap-x-3'}"
+                                style="grid-template-columns: repeat({spawnCount}, 1fr);"
+                            >
                                 {#each wave.spawns as spawn}
-                                    <div class="min-w-0">
-                                        <div class="text-[13px] font-bold uppercase leading-tight text-white">
+                                    <div class="min-w-0 text-center">
+                                        <div
+                                            class="{spawnCount === 4
+                                                ? 'line-clamp-2 break-words text-[10px] md:text-[13px]'
+                                                : 'text-[13px]'} font-bold uppercase leading-tight text-white"
+                                        >
                                             {formatLocation(spawn.location)}
                                         </div>
                                         {#if spawn.spawn_point}
-                                            <div class="mt-2 text-[11px] font-medium uppercase tracking-wider text-white/40">
+                                            <div
+                                                class="{spawnCount === 4
+                                                    ? 'mt-1 text-[10px] tracking-wide md:mt-2 md:text-[11px] md:tracking-wider'
+                                                    : 'mt-2 text-[11px] tracking-wider'} font-medium uppercase text-white/40"
+                                            >
                                                 {formatSpawnPoint(spawn.spawn_point)}
                                             </div>
                                         {/if}
