@@ -41,12 +41,13 @@
                     </div>
                 </div>
 
-                <table class="w-full table-fixed text-xs sm:text-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full table-fixed text-xs sm:text-sm">
                     <thead>
                         <tr class="map-table-header-row border-b text-xs">
                             <th
-                                class="w-11 px-1 py-1 text-left font-semibold sm:w-12 sm:px-2"
-                                >Wave</th
+                                class="w-7 px-0.5 py-1 text-left font-semibold sm:w-8 sm:px-1"
+                                >&nbsp;</th
                             >
                             {#each round.waves[0]?.spawns ?? [] as _, i}
                                 <th
@@ -64,7 +65,7 @@
                         {#each round.waves as wave, wi}
                             <tr class="map-table-row border-b last:border-0">
                                 <td
-                                    class="map-table-wave px-1 py-2 font-mono text-[11px] font-semibold sm:px-2 sm:py-3 sm:text-xs"
+                                    class="map-table-wave px-0.5 py-2 text-center font-mono text-[11px] font-semibold sm:px-1 sm:py-3 sm:text-xs"
                                 >
                                     {wave.wave_number}
                                 </td>
@@ -79,9 +80,9 @@
                                             : ''}"
                                     >
                                         {#if hasAttunements && atts.length === 1}
-                                            <div class="space-y-1 pl-[40%]">
+                                            <div class="space-y-1 text-center">
                                                 <span
-                                                    class="inline-block break-words rounded-full px-2 py-1 text-[11px] leading-tight font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] sm:px-3.5 sm:text-sm"
+                                                    class="inline-block break-words rounded-full px-2 py-1 text-center text-[11px] leading-tight font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] sm:px-3.5 sm:text-sm"
                                                     style="background-color: {attunementColor(
                                                         atts[0],
                                                     )}"
@@ -90,7 +91,7 @@
                                                 >
                                                 {#if spawn.spawn_point}
                                                     <div
-                                                        class="map-table-point text-[11px] font-medium uppercase tracking-wide"
+                                                    class="map-table-point text-center text-[11px] font-medium uppercase tracking-wide"
                                                     >
                                                         {formatYoteiSpawnPointForDisplay(
                                                             spawn.spawn_point,
@@ -99,9 +100,9 @@
                                                 {/if}
                                             </div>
                                         {:else if hasAttunements && atts.length >= 2}
-                                            <div class="space-y-1 pl-[40%]">
+                                            <div class="space-y-1 text-center">
                                                 <span
-                                                    class="inline-block break-words rounded-full px-2 py-1 text-[11px] leading-tight font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] sm:px-3.5 sm:text-sm"
+                                                    class="inline-block break-words rounded-full px-2 py-1 text-center text-[11px] leading-tight font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] sm:px-3.5 sm:text-sm"
                                                     style="background: linear-gradient(to right, {attunementColor(
                                                         atts[0],
                                                     )} 50%, {attunementColor(
@@ -112,7 +113,7 @@
                                                 >
                                                 {#if spawn.spawn_point}
                                                     <div
-                                                        class="map-table-point text-[11px] font-medium uppercase tracking-wide"
+                                                    class="map-table-point text-center text-[11px] font-medium uppercase tracking-wide"
                                                     >
                                                         {formatYoteiSpawnPointForDisplay(
                                                             spawn.spawn_point,
@@ -121,15 +122,15 @@
                                                 {/if}
                                             </div>
                                         {:else}
-                                            <div class="space-y-1 pl-[40%]">
+                                            <div class="space-y-1 text-center">
                                                 <span
-                                                    class="map-table-location break-words text-[11px] leading-tight font-medium sm:text-sm"
+                                                    class="map-table-location break-words text-center text-[11px] leading-tight font-medium sm:text-sm"
                                                 >
                                                     {spawn.location}
                                                 </span>
                                                 {#if spawn.spawn_point}
                                                     <div
-                                                        class="map-table-point text-[11px] font-medium uppercase tracking-wide"
+                                                    class="map-table-point text-center text-[11px] font-medium uppercase tracking-wide"
                                                     >
                                                         {formatYoteiSpawnPointForDisplay(
                                                             spawn.spawn_point,
@@ -143,7 +144,8 @@
                             </tr>
                         {/each}
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         {/each}
     </div>
