@@ -138,7 +138,7 @@ The admin workflow is designed around trusted contributors rather than a large m
 
 Authenticated JSON for tools and bots (no public unauthenticated rotation feed):
 
-- **`GET /api/rotation/yotei`** — `Authorization: Bearer` with **`BOT_API_TOKEN_YOTEI`** (same secret as `PUT /api/rotations/yotei`). Response is a single flat bot shape per map: `{ "week", "credits", "map_slug", "waves" (12 UI waves), "challenge_cards_slugs" }` with `location` kebab-case and `spawn` in `left` \| `middle` \| `right` \| `""`; **`attunements`** are included on `hidden-temple` spawns. Query parameter `format` is ignored for backward compatibility. Only maps with a rotation for the current Yōtei week (`getCurrentWeekStart`). `Cache-Control: private, no-store`.
+- **`GET /api/rotation/yotei`** — `Authorization: Bearer` with **`BOT_API_TOKEN_YOTEI`** (same secret as `PUT /api/rotations/yotei`). Response shape: `{ "week_start_unix", "maps": [ { "week", "credits", "map_slug", "waves" (12 UI waves), "challenge_cards_slugs" } ] }`. `week_start_unix` is a Unix timestamp in seconds (UTC, anchored to `YYYY-MM-DDT00:00:00Z` for the current Yōtei week from `getCurrentWeekStart`). In map waves, `location` is kebab-case and `spawn` is `left` \| `middle` \| `right` \| `""`; **`attunements`** are included on `hidden-temple` spawns. Query parameter `format` is ignored. Only maps with a rotation for the current Yōtei week (`getCurrentWeekStart`). `Cache-Control: private, no-store`.
 - **`GET /api/rotation/tsushima`** — `Authorization: Bearer` with **`BOT_API_TOKEN_TSUSHIMA`**. Response: `{ "maps": [ { "week_code", "waves" } ] }` for the current Tsushima week anchor.
 
 ### Write (ingest)

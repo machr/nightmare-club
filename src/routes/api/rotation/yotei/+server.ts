@@ -13,6 +13,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 
 	const supabase = locals.supabase;
 	const weekStart = getCurrentWeekStart();
+	const weekStartUnix = Math.floor(Date.parse(`${weekStart}T00:00:00Z`) / 1000);
 
 	const { data: maps, error: mapsError } = await supabase.from('maps').select('*').order('name');
 
@@ -74,7 +75,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 		);
 	}
 
-	const body = { maps: canonicalMaps };
+	const body = { week_start_unix: weekStartUnix, maps: canonicalMaps };
 
 	return json(body, {
 		headers: {
