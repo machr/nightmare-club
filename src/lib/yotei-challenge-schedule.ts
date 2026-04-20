@@ -35,8 +35,14 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'attunement-suspendable',
 		'attunement-suspendable'
 	],
-	// 7–12: not in JSON yet
-	null,
+	// 7 — river-village
+	[
+		'lose-location',
+		'lose-location',	
+		'lose-location',
+		'lose-location'
+	],
+	// 8–12: not in JSON yet
 	null,
 	null,
 	null,
