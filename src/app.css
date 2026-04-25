@@ -45,6 +45,8 @@
 	--table-subtext: hsl(214 20% 78%);
 	--table-stage-text: hsl(210 40% 98%);
 	--table-note: hsl(210 40% 96%);
+	--poster-accent: hsl(40 100% 61%);
+	--poster-subtle: hsl(0 0% 100% / 0.4);
 }
 
 .poster {
@@ -85,6 +87,8 @@
 	--table-subtext: hsl(0 0% 78%);
 	--table-stage-text: hsl(0 0% 100%);
 	--table-note: hsl(0 0% 96%);
+	--poster-accent: hsl(40 100% 61%);
+	--poster-subtle: hsl(0 0% 100% / 0.4);
 }
 
 .light {
@@ -125,6 +129,8 @@
 	--table-subtext: hsl(222.2 35% 24%);
 	--table-stage-text: hsl(222.2 47.4% 11.2%);
 	--table-note: hsl(222.2 47.4% 11.2%);
+	--poster-accent: hsl(42 95% 42%);
+	--poster-subtle: hsl(222.2 35% 24% / 0.75);
 }
 
 @theme inline {
@@ -291,5 +297,13 @@
 
 	.segmented-control__option--inactive {
 		@apply text-muted-foreground hover:text-foreground;
+	}
+
+	.poster-accent-text {
+		color: var(--poster-accent);
+	}
+
+	.poster-subtle-text {
+		color: var(--poster-subtle);
 	}
 }
