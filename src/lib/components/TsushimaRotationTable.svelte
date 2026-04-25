@@ -62,8 +62,20 @@
 
   const BONUS_WAVES = [2, 4, 7, 10, 13] as const;
 
-  /** Poster only: bonus objective icon from `bonus_objectives` (per-wave or by row order). */
-  function posterObjectiveBgUrlForWave(waveNum: number): string | null {
+  type BonusObjectiveEntry = {
+    wave?: number;
+    icon?: string;
+    name?: string;
+    target?: number;
+  };
+
+  /**
+   * Same matching rules as the bonus backdrop image: explicit `wave` on entries, else
+   * row `i` -> BONUS_WAVES[i].
+   */
+  function bonusObjectiveEntryForWave(
+    waveNum: number,
+  ): BonusObjectiveEntry | null {
     const raw = payload?.bonus_objectives;
     if (!Array.isArray(raw) || raw.length === 0) return null;
 
@@ -77,12 +89,9 @@
     if (hasExplicitWave) {
       for (const entry of raw) {
         if (!entry || typeof entry !== "object") continue;
-        const o = entry as { wave?: number; icon?: string };
+        const o = entry as BonusObjectiveEntry;
         if (o.wave !== waveNum) continue;
-        const icon = String(o.icon ?? "").trim();
-        if (icon) {
-          return `https://cdn.tsushimaru.com/objectives_tsushima/objectives_${encodeURIComponent(icon)}`;
-        }
+        return o;
       }
       return null;
     }
@@ -91,7 +100,25 @@
     if (idx < 0) return null;
     const entry = raw[idx];
     if (!entry || typeof entry !== "object") return null;
-    const icon = String((entry as { icon?: string }).icon ?? "").trim();
+    return entry as BonusObjectiveEntry;
+  }
+
+  /** Poster: e.g. "Shoot enemies with headshots. - 25" */
+  function posterBonusObjectiveLineForWave(waveNum: number): string | null {
+    const o = bonusObjectiveEntryForWave(waveNum);
+    if (!o) return null;
+    const name = String(o.name ?? "").trim();
+    if (!name) return null;
+    const t = o.target;
+    if (typeof t !== "number" || !Number.isFinite(t)) return null;
+    return `${name} - ${t}`;
+  }
+
+  /** Poster only: bonus objective icon from `bonus_objectives` (per-wave or by row order). */
+  function posterObjectiveBgUrlForWave(waveNum: number): string | null {
+    const o = bonusObjectiveEntryForWave(waveNum);
+    if (!o) return null;
+    const icon = String(o.icon ?? "").trim();
     if (!icon) return null;
     return `https://cdn.tsushimaru.com/objectives_tsushima/objectives_${encodeURIComponent(icon)}`;
   }
@@ -178,6 +205,7 @@
 
     <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
       {#each waves as wave}
+        {@const bonusLine = posterBonusObjectiveLineForWave(wave.wave)}
         <div
           class="relative overflow-hidden rounded-lg border border-white/25 px-4 pb-4 pt-3.5"
         >
@@ -201,13 +229,25 @@
               decoding="async"
             />
           {/if}
-          <div class="relative z-10 mb-4 flex items-center justify-between gap-2.5">
-            <span class="text-xl font-semibold tracking-tight text-white/65">
+          <div
+            class="relative z-10 mb-4 flex items-center justify-between gap-2.5"
+          >
+            <span
+              class="shrink-0 text-xl font-semibold tracking-tight text-white/65"
+            >
               {wave.wave}
             </span>
             {#if modifierForWave(wave.wave)}
-              <span class="poster-accent-text text-[11px] font-semibold uppercase tracking-widest">
+              <span
+                class="poster-accent-text min-w-0 text-right text-[11px] font-semibold uppercase leading-tight tracking-widest break-words"
+              >
                 {modifierForWave(wave.wave)}
+              </span>
+            {:else if bonusLine}
+              <span
+                class="poster-accent-text min-w-0 text-right text-[9px] font-semibold uppercase leading-tight tracking-widest break-words"
+              >
+                {bonusLine}
               </span>
             {/if}
           </div>
