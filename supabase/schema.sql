@@ -79,6 +79,7 @@ insert into challenges (name, description) values
   ('much-more-damage', 'Enemies deal much more damage'),
   ('ghost-weapon-cooldowns-increased', 'Ghost Weapon cooldowns are increased'),
   ('ghost-health-drain', 'Ghost''s Health slowly drains'),
+  ('spirit-healing-disabled', 'Spirit Healing disabled'),
   ('spirit-healing-drunk', 'Spirit Healing makes Ghosts drunk'),
   ('extremely-fast-attacks', 'Extremely fast attacks'),
   ('max-health-significantly-reduced', 'Max Health significantly Reduced'),
