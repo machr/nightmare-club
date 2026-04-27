@@ -53,7 +53,6 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 	null,
 	null,
 	null,
-	null,
 	null
 ];
 
