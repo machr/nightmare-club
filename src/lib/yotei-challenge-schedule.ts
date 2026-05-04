@@ -49,8 +49,14 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'reviving-ghosts-much-longer',
 		'unique-enemy-ambush'
 	],
-	// 9-12: not in JSON yet
-	null,
+	// 9 - frozen-valley
+	[
+		'enemy-health-refill',
+		'extremely-fast-attacks',
+		'ranged-last-hit',
+		'hidden-health-bars'
+	],
+	// 10-12 not in JSON yet
 	null,
 	null,
 	null
