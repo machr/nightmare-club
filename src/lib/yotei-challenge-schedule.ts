@@ -9,9 +9,19 @@
 
 const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 	// 1 — frozen-valley
-	['lose-location', 'lose-location', 'lose-location', 'lose-location'],
+	[
+		'lose-location',
+		'lose-location', 
+		'lose-location', 
+		'lose-location'
+	],
 	// 2 — hidden-temple
-	['ranged-last-hit', 'much-more-damage', 'increased-cooldowns', 'unique-enemy-ambush'],
+	[
+		'ranged-last-hit', 
+		'much-more-damage', 
+		'increased-cooldowns', 
+		'unique-enemy-ambush'
+	],
 	// 3 — river-village
 	[
 		'spirit-healing-drunk',
@@ -20,7 +30,12 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'spirit-healing-drunk'
 	],
 	// 4 — broken-castle
-	['lose-location', 'lose-location', 'lose-location', 'lose-location'],
+	[
+		'lose-location', 
+		'lose-location', 
+		'lose-location', 
+		'lose-location'
+	],
 	// 5 — frozen-valley
 	[
 		'max-health-significantly-reduced',
@@ -56,8 +71,14 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'ranged-last-hit',
 		'hidden-health-bars'
 	],
-	// 10-12 not in JSON yet
-	null,
+	// 10 - hidden-temple
+	[
+		'lose-location',
+		'lose-location',
+		'lose-location',
+		'lose-location'
+	],
+	// 11 - 12 not in JSON yet
 	null,
 	null
 ];
