@@ -141,7 +141,7 @@ insert into tsushima_maps (slug, name, zones, week_options, objectives, wave_mod
     'the-shores-of-vengeance',
     'The Shores of Vengeance',
     '[
-      {"zone":"Cliff","spawns":["Forest","Hut"]},
+      {"zone":"Cliff","spawns":["Forest R","Forest L","Hut"]},
       {"zone":"Boat","spawns":["Boat"]},
       {"zone":"Beach","spawns":["Beach"]}
     ]'::jsonb,

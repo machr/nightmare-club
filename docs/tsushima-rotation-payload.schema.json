@@ -186,7 +186,8 @@
       ],
       "zones": {
         "Cliff": [
-          "Forest",
+          "Forest R",
+          "Forest L",
           "Hut"
         ],
         "Boat": [
