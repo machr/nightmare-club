@@ -78,8 +78,14 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'lose-location',
 		'lose-location'
 	],
-	// 11 - 12 not in JSON yet
-	null,
+	// 11 - river-village
+	[
+		'much-more-damage',
+		'hidden-glints',
+		'double-spirit-cost',
+		'unique-enemy-ambush'
+	],
+	// 12 - not in JSON yet
 	null
 ];
 
