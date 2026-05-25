@@ -85,8 +85,13 @@ const BY_CYCLE_WEEK: readonly (readonly string[] | null)[] = [
 		'double-spirit-cost',
 		'unique-enemy-ambush'
 	],
-	// 12 - not in JSON yet
-	null
+	// 12 - broken-castle
+	[
+		'increased-onibi-damage',
+		'increased-onibi-damage',
+		'increased-onibi-damage',
+		'increased-onibi-damage'
+	]
 ];
 
 export function roundChallengeSlugsForCycleWeek(cycleWeek: number): readonly string[] | null {
